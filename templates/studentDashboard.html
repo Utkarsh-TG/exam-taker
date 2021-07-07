@@ -1,0 +1,471 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard|Student</title>
+    <link rel="stylesheet" href="{% static 'css/studentDashboard.css' %}">
+</head>
+<body>
+    {% include 'loading.html' %}
+    <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
+    <div class="container">
+        <div class="nav-wrapper">
+            <div class="page-title">Student Dashboard</div>
+            <div class="login-info">
+                <div class="user-login-info">{{ username }} {{ class }} {{ section }}</div>
+                <a class="logout-btn" id="logout-btn" href="/logout/">Logout</a>
+            </div>
+        </div>
+
+        <div class="assignments-container" id="assignments-container"></div>
+
+        <div class="assignment-window" id="assignment-window">
+            <div id="lava-zone"></div>
+            <div class="assignment-window-inner">
+                <div class="left-pane">
+                    <div class="exam-info-bar"></div>
+                    <div class="exam-rules">
+                        Rules:
+                        <ul id="rules-list">
+                            <li>Don't exit the exam space. If you enter lava zone, a warning will be issued.</li>
+                            <li>Changing tab, window, click on other window, exiting fullscreen will result in straight ban.</li>
+                            <li>Exam will automatically submit on time end.</li>
+                        </ol>
+                    </div>
+                    <div class="assignment-chat assignment-class-function">
+                        <div class="chat-container" id="chat-log"></div>
+                        <div class="chat-input-container">
+                            {% csrf_token %}
+                            <input type="text" id="chat-input" placeholder="Message">
+                            <button id="submit-chat-message" onclick="submitChatMessage()">SEND</button>
+                        </div>
+                    </div>
+                    <div class="time-ticker"><span id="clock-container"></span></div>
+                    <div class="submit-btn-wrapper">
+                        <div class="initial-submit-btn" id="submit-test-btn">Submit</div>
+                    </div>
+                </div>
+                <div class="right-pane">
+                    <div class="blocked-window">
+                        <div class="block-messg">You have been blocked! Ask your teacher to unblock to continue paper.</div>
+                    </div>
+                    <div class="question-paper-wrapper">
+                        <img id="question-paper" src="" frameborder="0">
+                    </div>
+                    <div class="asnwer-form-wrapepr">
+                        <div id="answer-form">
+                            <textarea id="text-answers" placeholder="Answers.."></textarea>                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="submit-warning">
+            <span class="submit-warning-message">Warning! By continuing you won't be able to make any changes to your text answers, nor you would be able to see question paper.</span>
+            <div class="submit-warning-btns">
+                <div class="final-submit-window-open submit-warning-btn" id="open-final-submit">Continue</div>
+                <div class="close-submit-warning submit-warning-btn" id="close-submit-btn">Return</div>
+            </div>
+        </div>
+        <div class="final-submit-window">
+            <div class="submit-window-inner">
+                <div class="upload-file-container">
+                    <input type="file" id="answer-file" multiple>
+                    <div class="upload-file-btn" id="upload-file">Upload</div>
+                </div>
+                <div class="final-submit-btn" id="final-submit-btn">Submit</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-storage.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        username = "{{ username }}"
+        userClass = "{{ class }}"
+        userSection = "{{ section }}"
+
+        $('.error-message').css({'display':'{{ error_display }}'});
+
+        $('#close-error').click(function(){
+            $('.error-message').fadeOut(500);
+        });
+
+        var firebaseConfig = {
+            apiKey: "AIzaSyD7ddl63JBC-Xxj2vKe99R5JJkxBJDvTVY",
+            authDomain: "exam-3d397.firebaseapp.com",
+            databaseURL: "https://exam-3d397-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "exam-3d397",
+            storageBucket: "exam-3d397.appspot.com",
+            messagingSenderId: "647787494671",
+            appId: "1:647787494671:web:6afa3e03b1184d113c127a",
+            measurementId: "G-2CTKYSPY7P"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        var database = firebase.database();
+        var storage = firebase.storage();
+         
+        //generate assignments UI
+        const generateAssignmentList = () => {
+            let parent = document.getElementById('assignments-container')
+            parent.innerHTML = ''
+            let assignmentData = []
+            Object.entries(assignment_data).forEach(
+                ([key, value]) => assignmentData.push(value)
+            );
+            for(let i = 0; i < assignmentData.length; i++){
+                if(assignmentData[i]['assigned'] == 'true' && assignmentData[i]['ended'] == 'false'){
+                    assignment = document.createElement('div')
+                    assignment.classList.add('assignment-wrapper','available-assignment')
+                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['date'] +'</span></div><div class="assignment-functions"><div class="assignment-assigned assignment-function-btn">Assigned</div><div class="assignment-not-ended assignment-function-btn">Not Ended</div><div class="assignment-start assignment-function-btn" onclick="startTest(this)">Take Test</div></div>'
+                    parent.insertBefore(assignment, parent.children[0]);
+                }
+                else if(assignmentData[i]['assigned'] == 'true' && assignmentData[i]['ended'] == 'true'){
+                    assignment = document.createElement('div')
+                    assignment.classList.add('assignment-wrapper','ended-assignment')
+                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['date'] +'</span></div><div class="assignment-functions"><div class="assignment-assigned assignment-function-btn">Assigned</div><div class="assignment-ended assignment-function-btn">Ended</div><div class="assignment-non-start assignment-function-btn">Take Test</div></div>'
+                    parent.appendChild(assignment)
+                }
+            }
+            for(let i = 0; i < assignmentData.length; i++){
+                if(assignmentData[i]['assigned'] == 'false'){
+                    assignment = document.createElement('div')
+                    assignment.classList.add('assignment-wrapper','not-avaliable-assignment')
+                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['date'] +'</span></div><div class="assignment-functions"><div class="assignment-not-assigned assignment-function-btn">Not Assigned</div><div class="assignment-not-ended assignment-function-btn">Not Ended</div><div class="assignment-non-start assignment-function-btn">Take Test</div></div>'
+                    parent.insertBefore(assignment, parent.children[0]);
+                }
+            }
+        }
+
+        const getAssignmentsUpdate = () => {
+            let ref = database.ref('Assignments').child(userClass);
+            ref.on('value', function(dataSnapshot){
+                assignment_data = dataSnapshot.val()
+                generateAssignmentList()
+            });
+        }
+
+        getAssignmentsUpdate()
+
+
+        //on exam start
+        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat
+
+        const designExamForm = (data) => {
+            $('.exam-info-bar').html(data['title'])
+            $('#question-paper').attr('src' , data['file'])
+            displayChat()
+        }
+
+        const startTimer = (data) => {
+            const convertHMS = (value) => {
+                let sec = parseInt(value, 10); // convert value to number if it's string
+                let hours   = Math.floor(sec / 3600); // get hours
+                let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
+                let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
+                // add 0 if value < 10; Example: 2 => 02
+                if (hours   < 10) {hours   = "0"+hours;}
+                if (minutes < 10) {minutes = "0"+minutes;}
+                if (seconds < 10) {seconds = "0"+seconds;}
+                return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
+            }
+            if(!stopTimer){
+                timeLeft = Number(data['time'])*60
+                setInterval(()=>{
+                    $('#clock-container').html(convertHMS(timeLeft))
+                    timeLeft -= 1
+                    if(timeLeft <= 0){
+                        stopTimer = true;
+                        timeOver = true;
+                    }
+                }, 1000)
+            }
+        }
+        const generateWarning = (err_message) => {
+
+        }
+        const generateBlock = (method) => {
+            if(method == 'hide'){
+                $('.blocked-window').css({'display':'none'})    
+            }
+            if(method == 'show'){
+                $('.blocked-window').css({'display':'flex'})
+            }
+        }
+        const preventCheat = () => {
+            _preventCheat = false //make it true
+            if(_preventCheat){
+                document.addEventListener('fullscreenchange', (e) => {
+                    e.preventDefault()
+                    if (document.fullscreenElement) {
+                        console.log('fullscreen enter');
+                    } else {
+                        console.log('fullscreen exit')
+                        alert('Exiting fullscreen will end paper')
+                    }
+                });
+                window.addEventListener('beforeunload', function (e) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                });
+
+                $(window).blur(function() {
+                    alert('cheat alert')
+                });
+                $('#lava-zone').mouseenter(() => {
+                    $('#assignment-window').addClass('warning-assignment')
+                })
+                $('.assignment-window-inner').mouseenter(() => {
+                    $('#assignment-window').removeClass('warning-assignment')
+                })
+            }
+        }
+
+        const uploadStudentWarning = (mssg) => {
+            generateWarning(mssg)
+            //show warning
+            dateToday = new Date()
+            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+            $.ajax({
+                type: 'POST',
+                url: '/student/exam/warn/',
+                data:{
+                    user: username,
+                    assignment: assignmentTitle,
+                    section: userSection,
+                    class: userClass,
+                    time: _time,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                }
+            });
+        }
+
+        const uploadStudentBlock = () => {
+            //make block request
+            dateToday = new Date()
+            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+            $.ajax({
+                type: 'POST',
+                url: '/student/exam/block/',
+                data:{
+                    user: username,
+                    assignment: assignmentTitle,
+                    section: userSection,
+                    class: userClass,
+                    time: _time,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                }
+            });
+        }
+        
+        const beginTest = (data) => {
+            console.log(data)
+            assignmentTitle = data['title']
+            preventCheat()
+            startTimer(data)
+            designExamForm(data)
+        }
+
+        const openAssignment = (assignmentName) => {
+            if(assignment_data[assignmentName]['assigned'] == 'true' && assignment_data[assignmentName]['ended'] == 'false'){
+                elem = document.querySelector('body')
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 */
+                    elem.msRequestFullscreen();
+                }
+                $('.assignments-container').css({'display':'none'})
+                $('#assignment-window').css({'display':'flex'})
+                beginTest(assignment_data[assignmentName])
+            }
+        }
+
+        const startTest = (e) => {
+            let target = e.parentNode.parentNode.children[0].children[0];
+            openAssignment(target.textContent)
+        }
+        /*
+        window.oncontextmenu = function () {
+            return false;
+            }
+        document.onkeydown = function (e) { 
+            if (window.event.keyCode == 123 || e.button==2){ // f12 or right click
+                return false
+            }    
+            else if(window.event.keyCode == 17){ // ctrl
+                document.onkeydown = function (e) {
+                    if (window.event.keyCode == 16){ // shift
+                        document.onkeydown = function (e) {
+                            if (window.event.keyCode == 73){ // i
+                                return false
+                            }
+                        }
+                    }
+                }
+            }
+            else if(window.event.keyCode == 17){ // ctrl
+                document.onkeydown = function (e) {
+                    if (window.event.keyCode == 67){ // c
+                        return false
+                    }
+                    else if(window.event.keyCode == 86){ // v
+                        return false
+                    }
+                } 
+            }
+        }
+        */
+        //chat
+        var chatData, old_chat_data
+        const generateChatMessage = (data) => {
+            let parent = document.getElementById('chat-log')
+            chatData = data
+            oldChatData = old_chat_data
+            chatDataList = []
+            oldChatDataList = []
+            if(chatData == null){
+                chatDataList = []
+                oldChatDataList = []
+                old_chat_data = null
+                document.getElementById('chat-log').innerHTML = ''
+            }
+            if(chatData != null){
+                Object.entries(chatData).forEach(
+                    ([key, value]) => chatDataList.push(value)
+                );
+            }
+            if(oldChatData != null){
+                Object.entries(oldChatData).forEach(
+                    ([key, value]) => oldChatDataList.push(value)
+                );
+            }
+            for(let i = 0; i < chatDataList.length; i++){
+                for(let n = 0; n < oldChatDataList.length; n++){
+                    if(JSON.stringify(chatDataList[i]) == JSON.stringify(oldChatDataList[n])){
+                        chatDataList.splice(i, 1) 
+                    }
+                }
+            }
+            if(chatDataList.length > 0){
+                old_chat_data = data
+                oldChatData = chatData
+                oldChatDataList = chatDataList
+                for(let i = 0; i < chatDataList.length; i++){
+                    chat = document.createElement('div')
+                    chat.classList.add('chat-message')
+                    chat.innerHTML = '<div class="message-sender">'+ chatDataList[i]['name'] +'</div>' + chatDataList[i]['message'] + '<div class="chat-message"></div>'
+                    parent.appendChild(chat)
+                }
+            }
+            $("#chat-log").scrollTop($("#chat-log")[0].scrollHeight);
+        }
+
+        const displayChat = () => {
+            let ref = firebase.database().ref("Chat"+'/'+ assignmentTitle+'/'+ userSection );
+            console.log("Chat"+'/'+ assignmentTitle+'/'+ userSection)
+            ref.on('value', function(dataSnapshot){
+                let chat_data = dataSnapshot.val()
+                console.log(chat_data)
+                generateChatMessage(chat_data)
+            })
+        }
+        
+        //submit chat on enter
+        $('#chat-input').on("keypress", (e) => {
+            if(e.keyCode == '13'){
+                submitChatMessage()
+            }
+        })
+
+        const submitChatMessage = () => {
+            assignmentname = assignmentTitle
+            _section = userSection
+            _message = $('#chat-input').val()
+            _user = $('.user-info').text()
+            dateToday = new Date()
+            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+            if(!_message.trim() == ''){
+                $.ajax({
+                    type: 'POST',
+                    url: '/exam/chat/message/',
+                    data:{
+                        user: _user,
+                        message: _message,
+                        assignment: assignmentname,
+                        section: _section,
+                        time: _time,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },success: function(){
+                        $('#chat-input').val('')
+                    }
+                });
+            }
+        }
+
+        //submit/upload file
+        $('#submit-test-btn').on('click', ()=> {
+            $('.submit-warning').css({'display':'block'})
+        });
+        $('#upload-file').on('click', ()=> {
+            $("#answer-file").click()
+        });
+        $('#open-final-submit').on('click', ()=>{
+            _preventCheat = false
+            $('.final-submit-window').css({'display':'flex'})
+        })
+        $('#close-submit-btn').on('click', ()=>{
+            $('.submit-warning').css({'display':'none'})
+        })
+        //final submit answers
+        var answerFileURL = []
+
+        $('#final-submit-btn').on('click', () => {
+            storageRef = storage.ref('Results').child(assignmentTitle).child(userClass).child(userSection).child(username);
+            $("#answer-file").each(function(index, field){
+                for(var i=0;i<field.files.length;i++) {
+                    const file = field.files[i];
+                    thisref = storageRef.child(i.toString()).put(file)
+                    thisref.on('state_changed',function(snapshot) {
+                        console.log('Done');
+                    }, function(error) {
+                        console.log('Error',error);
+                    }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                            answerFileURL.push(downloadURL)
+                            if(i == field.files.length){
+                                console.log('yoyo')
+                                dateToday = new Date()
+                                _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '/student/exam/submit/',
+                                    data:{
+                                        user: username,
+                                        class: userClass,
+                                        section: userSection,
+                                        title: assignmentTitle,
+                                        time: _time,
+                                        textanswer: $('#text-answers').val(),
+                                        files: answerFileURL.toString(),
+                                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                                    }
+                                })
+                            }
+                        });
+                    });
+                }
+            });
+        });
+
+    </script>
+    <script src="{% static 'js/student-dash-assignments.js' %}"></script>
+</body>
+</html>

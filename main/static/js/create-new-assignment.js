@@ -19,8 +19,8 @@ var storage = firebase.storage();
 //storage ref
 var storageref = storage.ref('Assignments').child(currentClass);
 
-$("#assignment-file-input").on('change' ,function(){
-    console.log('posting')
+$(document).on('submit', '#create-assignment', function(e){
+    e.preventDefault()
     storageref = storage.ref('Assignments').child(currentClass);
     file = document.getElementById("assignment-file-input").files[0];
     // uploading file this storage ref
@@ -31,15 +31,14 @@ $("#assignment-file-input").on('change' ,function(){
         console.log('Error',error);
     }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
             file_URL = downloadURL
+            test()
         });
     });
-})
+});
 
-$(document).on('submit', '#create-assignment', function(e){
-    alert('posting')
+function test(){
     today = new Date().toISOString().slice(0, 10);
     _class = currentClass
-    e.preventDefault()
     $.ajax({
         type: 'POST',
         url: '/teacher/exam/create/',
@@ -60,4 +59,4 @@ $(document).on('submit', '#create-assignment', function(e){
         }
     });
     $('#create-assignment').trigger("reset"); 
-});
+}

@@ -5,17 +5,18 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard|Teacher</title>
     <link rel="stylesheet" href="{% static 'css/teacherDashboard.css' %}">
 </head>
 <body>
+    {% include 'loading.html' %}
     <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
     <div class="container">
         <div class="navbar">
             <div class="page-title">Teacher Dashboard</div>
             <div class="login-info">
                 <div class="user-info login-info-btn">{{ username }}</div>
-                <div class="logout-btn login-info-btn">Logout</div>
+                <a class="logout-btn login-info-btn" href='/logout/'>Logout</a>
             </div>
         </div>
         <div class="taskbar-container">
@@ -85,9 +86,24 @@
                     </div>
                 </div>
                 <div class="assignment-class-functions">
-                    <div class="assignment-chat assignment-class-function"></div>
-                    <div class="assignment-attendees assignment-class-function"></div>
-                    <div class="block-logger assignment-class-function"></div>
+                    <div class="assignment-chat assignment-class-function">
+                        <div class="chat-container" id="chat-log"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Message">
+                            <button id="submit-chat-message" onclick="submitChatMessage()">SEND</button>
+                        </div>
+                    </div>
+                    <div class="assignment-attendees assignment-class-function">
+                        <div id="attendee-log"></div>
+                    </div>
+                    <div class="assignment-class-function">
+                        <div class="warning-container" id="warning-log"></div>
+                        <div class="warning-input-container">
+                            <input type="text" id="warning-input" placeholder="User">
+                            <button id="block-user" onclick="blockUser()">Block</button>
+                            <button id="un-block-user" onclick="unBlockUser()">UnBlock</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,12 +136,71 @@
             $('.error-message').fadeOut(500);
         });
 
+        _currentClass = {
+            aInternal: 10,
+            aListener: function(val) {},
+            set a(val) {
+                this.aInternal = val;
+                this.aListener(val);
+            },
+            get a() {
+                return this.aInternal;
+            },
+            registerListener: function(listener) {
+                this.aListener = listener;
+            }
+        }
         var currentClass = '10';
         var currentSection = 'A';
         var currentAssignmentTitle = ''
 
         var assignmentWrap;
         
+        _currentClass.registerListener(function(val) {
+            _class = val;
+            let _date_ = new Date();
+            _date_.setTime(_date_.getTime() + (24*60*60*1000));
+            document.cookie = "teacherClass="+ _class + "; expires="+_date_;
+        });
+
+        function getCookie(cname) {
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for(let i = 0; i <ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                    console.log(c)
+                }
+            }
+            return "10";
+        }
+
+        getLastClass()
+
+        function getLastClass(){
+            let lastClass = getCookie('teacherClass')
+            currentClass = lastClass
+            document.getElementById('assignment-container').innerHTML = '';
+            fetchAssignments();
+
+            if(!lastClass){
+                lastClass == 10;
+            }
+            classBtn.forEach(button => { 
+                button.classList.remove('active-class-btn');
+            });
+            classBtn.forEach(button => { 
+                if(button.textContent.slice(6) == lastClass){
+                    button.classList.add('active-class-btn')
+                } 
+            });
+        }
+
         function generateAssignments(data){
             parent = document.getElementById('assignment-container')
             parent.innerHTML = ''
@@ -135,17 +210,16 @@
                 assignmentWrap.classList.add('assignment-wrapper')
                 parent.appendChild(assignmentWrap)
                 if(temp['assigned'] == 'false'){
-                    assignmentWrap.innerHTML = '<div class="assignment-title"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assign-task assignment-function-btn">Assign</div><div class="update-task assignment-function-btn">Update</div><div class="make-results assignment-function-btn" disabled>Results</div><div class="noend-task assignment-function-btn">End</div></div>'
+                    assignmentWrap.innerHTML = '<div class="assignment-title"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assign-task assignment-function-btn">Assign</div><div class="update-task assignment-function-btn">Update</div><div class="make-results assignment-function-btn">Results</div><div class="noend-task assignment-function-btn">End</div></div>'
                 }
                 else if(temp['assigned'] == 'true' && temp['ended'] == 'false'){
-                    assignmentWrap.innerHTML = '<div class="assignment-title open-view-assignment"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assigned-task assignment-function-btn" disabled>Assigned</div><div class="updated-task assignment-function-btn" disabled>Update</div><div class="make-results assignment-function-btn" disabled>Results</div><div class="end-task assignment-function-btn">End</div></div>'
+                    assignmentWrap.innerHTML = '<div class="assignment-title open-view-assignment" onclick="viewAssignment(this)"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assigned-task assignment-function-btn">Assigned</div><div class="updated-task assignment-function-btn">Update</div><div class="make-results assignment-function-btn">Results</div><div class="end-task assignment-function-btn">End</div></div>'
                 }
                 if(temp['ended'] == 'true'){
-                    assignmentWrap.innerHTML = '<div class="assignment-title"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assigned-task assignment-function-btn" disabled>Assigned</div><div class="updated-task assignment-function-btn" disabled>Update</div><div class="view-results assignment-function-btn">Results</div><div class="ended-task assignment-function-btn" disabled>Ended</div></div>'
+                    assignmentWrap.innerHTML = '<div class="assignment-title"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assigned-task assignment-function-btn" >Assigned</div><div class="updated-task assignment-function-btn">Update</div><div class="view-results assignment-function-btn">Results</div><div class="ended-task assignment-function-btn">Ended</div></div>'
                 }
                 if(i == data.length-1){
                     reAssignUpdateButton();
-                    updateViewAssignmentBtn();
                 }
             }
         }
@@ -174,6 +248,7 @@
                 button.classList.remove('active-class-btn');
             });
             thisTarget.classList.add('active-class-btn');
+            _currentClass.a = thisTarget.textContent.slice(6);
             currentClass = thisTarget.textContent.slice(6);
             document.getElementById('assignment-container').innerHTML = '';
             fetchAssignments();

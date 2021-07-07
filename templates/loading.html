@@ -1,0 +1,98 @@
+<style>
+    .loader-window{
+        height: 100vh;
+        width: 100vw;
+        z-index: 100;
+        background: green;
+        position: absolute;
+        display: none;
+    }
+    .loader{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+    }
+    /* Creating the dots */
+    .loader span{
+        height: 25px;
+        width: 25px;
+        margin-right: 10px;
+        border-radius: 50%;
+        background-color: #fff;
+        animation: loading 1s linear infinite;
+    }
+    .visible{
+        display: block !important;
+    }
+    /* Creating the loading animation*/
+    @keyframes loading {
+        0%{
+            transform: translateX(0);
+        }
+        25%{
+            transform: translateX(15px);
+        }
+        50%{
+            transform: translateX(-15px);
+        }
+        100%{
+            transform: translateX(0);
+        }    
+    }
+    .loader span:nth-child(1){
+        animation-delay: 0.1s;
+    }
+    .loader span:nth-child(2){
+        animation-delay: 0.2s;
+    }
+    .loader span:nth-child(3){
+        animation-delay: 0.3s;
+    }
+    .loader span:nth-child(4){
+        animation-delay: 0.4s;
+    }
+    .loader span:nth-child(5){
+        animation-delay: 0.5s;
+    }
+</style>
+<div class="loader-window">
+    <div class="loader">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</div>
+<script>
+    const loadWindow = (window, type) => {
+        if(type == 'in'){
+            $('.loader-window').addClass('visible');
+            return false;
+        }
+        if(window == 'load'){
+            if(type == 'out'){
+                setTimeout(function() {
+                    $('.loader-window').removeClass('visible');
+                }, 3000);
+            }
+        }
+        if(window == 'mid'){
+            $('.loader-window').addClass('visible');
+            setTimeout(function() {
+                $('.loader-window').removeClass('visible');
+            }, type);
+        }
+    }
+    document.onreadystatechange = function () {
+        if (document.readyState != "complete") {
+            loadWindow('load', 'in')
+        }else{
+            loadWindow('load', 'out')
+        }
+    }
+</script>

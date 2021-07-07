@@ -36,6 +36,7 @@ function postTask(task, title, time, desc, fileURL, date){
         });
     }
     if(task == 'end'){
+        console.log('end')
         _class = currentClass
         $.ajax({
             type: 'POST',
@@ -130,20 +131,7 @@ function reAssignUpdateButton(){
 }
 
 $('#update-file-input').on('change', function(){
-    console.log('test')
-    storageref = storage.ref('Assignments').child(currentClass);
     fileChange = true
-    updated_file = document.getElementById("update-file-input").files[0];
-    thisref = storageref.child(updated_file.name).put(updated_file);
-    thisref.on('state_changed',function(snapshot) {
-            console.log('Done');
-        }, function(error) {
-            console.log('Error',error);
-        }, function() {
-            thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                updated_file_URL = downloadURL;
-            });
-        })
 }) 
 
 function postUpdatedAssignmentForm(){
@@ -176,7 +164,19 @@ function postUpdatedAssignmentForm(){
 $(document).on('submit', '#update-assignment', function(e){
     e.preventDefault()
     if(fileChange){
-            postUpdatedAssignmentForm();
+        storageref = storage.ref('Assignments').child(currentClass);
+        updated_file = document.getElementById("update-file-input").files[0];
+        thisref = storageref.child(updated_file.name).put(updated_file);
+        thisref.on('state_changed',function(snapshot) {
+                console.log('Done');
+            }, function(error) {
+                console.log('Error',error);
+            }, function() {
+                thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                    updated_file_URL = downloadURL;
+                    postUpdatedAssignmentForm();
+                });
+            })
     }else{
         _class = currentClass
         // today's date
