@@ -489,4 +489,7 @@ body{
     .taskbar-container{
         font-size: 1em;
     }
+    #search-assignments{
+        width: 100%;
+    } 
 }
