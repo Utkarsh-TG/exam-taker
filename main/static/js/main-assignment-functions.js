@@ -51,13 +51,15 @@ const openStudentsList = (section) => {
     let students = results_data[section]
     parent = document.getElementById('students-wrapper')
     parent.innerHTML = ''
-    Object.keys(students).forEach(key => {
-        studentBtn = document.createElement('div')
-        studentBtn.classList.add('student-select-btn')
-        studentBtn.innerHTML = key + '-' + students[key]['name']
-        parent.appendChild(studentBtn)
-        assignStudentBtn()
-    });
+    if(students){
+        Object.keys(students).forEach(key => {
+            studentBtn = document.createElement('div')
+            studentBtn.classList.add('student-select-btn')
+            studentBtn.innerHTML = key + '-' + students[key]['name']
+            parent.appendChild(studentBtn)
+            assignStudentBtn()
+        });
+    }
 }
 
 const getResults = (e) => {
@@ -76,20 +78,22 @@ const assignSectionBtn = () => {
 const generateResults = (data) => {
     $('.students-wrapper').css({'display':'none'})
     $('.students-result-wrapper').css({'display':'none'})
-    $('.section-wrapper').css({'display':'block'})
+    $('.section-wrapper').css({'display':'flex'})
     $('.results-container').css({'display':'block'})
     $('.assignment-window').css({'display':'none'})
     $('.create-task-wrapper').css({'display':'none'})
     $('.assignments-container').css({'display':'none'})
     parent = document.getElementById('section-wrapper')
     parent.innerHTML = ''
-    Object.keys(data).forEach(key => {
-        sectionBtn = document.createElement('div')
-        sectionBtn.classList.add('section-select-btn')
-        sectionBtn.innerHTML = key
-        parent.appendChild(sectionBtn)
-        assignSectionBtn()
-    });
+    if(data){
+        Object.keys(data).forEach(key => {
+            sectionBtn = document.createElement('div')
+            sectionBtn.classList.add('section-select-btn')
+            sectionBtn.innerHTML = key
+            parent.appendChild(sectionBtn)
+            assignSectionBtn()
+        });
+    }
 }
 
 function postTask(task, title, time, desc, fileURL, date){
@@ -310,7 +314,7 @@ const returnStudentResultWrapper = () =>{
 
 const returnStudentsWrapper = () =>{
     loadWindow('mid', 500)
-    $('.section-wrapper').css({'display':'block'})
+    $('.section-wrapper').css({'display':'flex'})
     $('.students-wrapper').css({'display':'none'})
     $('.students-result-wrapper').css({'display':'none'})
 }

@@ -154,6 +154,8 @@ def studentLogin(request):
 def teacherDashboard(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -166,6 +168,8 @@ def teacherDashboard(request):
 def examCreate(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -196,6 +200,8 @@ def examCreate(request):
 def examUpdate(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -227,6 +233,8 @@ def examUpdate(request):
 def examUpdateFile(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -258,6 +266,8 @@ def examUpdateFile(request):
 def teacherExamRequest(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -285,6 +295,8 @@ def teacherExamRequest(request):
 def teacherExamStart(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -313,6 +325,8 @@ def teacherExamStart(request):
 def teacherExamEnd(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -349,6 +363,8 @@ def teacherExamWindow(request):
 def examChatMessage(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
@@ -377,6 +393,8 @@ def examChatMessage(request):
 def examBlockStudent(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     
@@ -406,6 +424,8 @@ def examBlockStudent(request):
 def examUnblockStudent(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     
@@ -436,6 +456,8 @@ def examUnblockStudent(request):
 def studentDashboard(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
             return redirect(login)
     #request userid
@@ -453,6 +475,8 @@ def studentDashboard(request):
 def studentExamSubmit(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
             return redirect(login)
     #request userid
@@ -485,6 +509,8 @@ def studentExamSubmit(request):
 def studentExamWarn(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
             return redirect(login)
     #request userid
@@ -514,6 +540,8 @@ def studentExamWarn(request):
 def studentExamBlock(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
             return redirect(login)
     #request userid
@@ -548,6 +576,8 @@ def studentExamBlock(request):
 def studentExamAttendee(request):
      #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
             return redirect(login)
     #request userid
@@ -574,6 +604,8 @@ def studentExamAttendee(request):
 def teacherExamResult(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
             return redirect(login)
     #request userid
