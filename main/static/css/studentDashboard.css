@@ -27,7 +27,7 @@ input,input:focus{
 	transform: translate(-50%, 0%);
 	color: #f2f2f2;
 	font-weight: 600;
-    z-index: 50;
+    z-index: 999;
 }
 #close-error{
 	position: relative;
@@ -191,6 +191,7 @@ ul#rules-list li{
     z-index: 18;
     height: 100%;
     width: 100%;
+    background: #f80000;
 }
 .assignment-chat{
     max-height: 50%;
@@ -203,10 +204,10 @@ ul#rules-list li{
 }
 .question-paper-wrapper{
     flex: 1;
-    overflow-y: auto;
 }
 #question-paper{
     width: 100%;
+    height: 100%;
 }
 #answer-form{
     width: 100%;
@@ -277,6 +278,7 @@ ul#rules-list li{
     position: absolute;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
 }
 .submit-warning{
     padding: 30px;
@@ -303,6 +305,7 @@ ul#rules-list li{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-bottom: 50px;
 }
 #answer-file{
     display: none;
@@ -357,6 +360,40 @@ ul#rules-list li{
     border-radius: 5px;
     background: #f2f2f2;
     margin: 0px auto;
+}
+.warning-display{
+    width: 95vw;
+    height: 95vh;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(25px);
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 150;
+    padding: 50px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+#warning-msg{
+    background: #69cf6e;
+    color: #f2f2f2;
+    font-size: 2.2em;
+    padding: 12px;
+    border-radius: 5px;
+}
+.final-time-ticker{
+    margin-top: 30px 0xp;
+    background: #f2f2f2;
+    padding: 30px 40px;
+    border-radius: 5px;
+}
+#final-clock-container{
+    font-size: 2.2em;
+    font-weight: 700;
+    letter-spacing: 7px;
+    color: #4bbb50;
 }
 @keyframes blinkWarning{
     0%{

@@ -5,9 +5,6 @@
     box-sizing: border-box;
     transition: 0.2s ease;
 }
-body{
-    overflow: hidden;
-}
 .error-message{
 	display: none;
 	justify-content: space-between;
@@ -54,9 +51,10 @@ body{
     width: 100%;
     background: rgb(136, 212, 139);
     font-size: 1.2em;
+    align-items: center;
 }
 .page-title{
-    padding: 15px;
+    padding: 15px 8px;
 }
 .login-info{
     display: flex;
@@ -109,8 +107,7 @@ body{
 }
 .assignments-container{
     width: 100%;
-    height: 90%;
-    overflow-y: auto;
+    min-height: 90%;
 }
 .assignment-wrapper{
     display: flex;
@@ -162,9 +159,6 @@ body{
     display: flex;
     justify-content: space-between;
 }
-#assignment-description-input{
-    display: block;
-}
 .submit-btn{
     display: block;
     padding: 10px 10px;
@@ -179,13 +173,15 @@ body{
     background: rgba(250,250,250,0.2);
     color: #000;
 }
-#assignment-description-input{
+#assignment-description-input, #update-description-input{
+    display: block;
+    resize: none;
     width: 100%; 
 }
 #assignment-file-input{
     display: block;
 }
-#hide-new-assignment-form-btn{
+.return-back-btn{
     padding: 10px;
     font-size: 1.1em;
     cursor: pointer;
@@ -193,14 +189,11 @@ body{
     color: #f2f2f2;
     display: inline-block;
 }
-#hide-new-assignment-form-btn:hover{
+.return-back-btn:hover{
     background: rgba(250,250,250,0.2);
     color: #000;
 }
-#assignment-description-input{
-    resize: none;
-}
-#assignment-description-input:focus{
+#assignment-description-input:focus, #update-description-input:focus{
     outline: none;
 }
 .assignment-file-wrapper{
@@ -217,6 +210,14 @@ body{
 }
 #update-assignment{
     display: none;
+}
+.page-logo{
+    width: 40px;
+}
+.title-logo-wrapper{
+    display: flex;
+    align-items: center;
+    padding: 0px 15px;
 }
 .assignment-window{
     z-index: 55;
@@ -370,4 +371,122 @@ body{
     font-size: 1.3em;
     font-weight: 700;
     height: 100%;
+}
+.assignment-file-image{
+    width: 100%;
+}
+#file-viewer{
+    height: 500px;
+    overflow-y: auto;
+}
+.results-container{
+    width: 100%;
+    height: 100%;
+    padding: 25px;
+    z-index: 15;
+    display: none;
+}
+#section-wrapper{
+    padding: 50px 0px;
+}
+.section-select-btn{
+    background: #f2f2f2;
+    color: rgb(65, 138, 67);
+    font-size: 1.5em;
+    padding: 8px 25px;
+    cursor: pointer;
+    display: inline-block;
+}
+.section-select-btn:hover{
+    background: rgb(65, 138, 67);
+    color: #f2f2f2;
+}
+#students-wrapper{
+    padding: 20px 0px;
+    overflow-y: auto;
+}
+.student-select-btn{
+    background: #f2f2f2;
+    color: rgb(65, 138, 67);
+    font-size: 1.3em;
+    padding: 8px 25px;
+    cursor: pointer;
+    margin: 30px 0px;
+    width: fit-content;
+}
+.student-select-btn:hover{
+    background: rgb(65, 138, 67);
+    color: #f2f2f2;
+}
+#file-viewer{
+    width: 100%;
+}
+.students-result-inner{
+    padding: 30px 0px;
+}
+.student-info-wrapper{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 50px;
+}
+#search-assignments{
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    padding: 11px 15px;
+    font-size: 1.2em;
+}
+.assignment-search-wrapper{
+    padding: 18px 27px;
+}
+.student-info{
+    padding: 7px 13px;
+    background: #f2f2f2;
+    font-size: 1.3em;
+}
+#student-answers{
+    padding: 13px 15px;
+    background: #f2f2f2;
+    width: 100%;
+    font-size: 1.3em;
+    margin-bottom: 50px;
+}
+#student-file{
+    width: 100%;
+    min-height: 500px;
+}
+@media screen and (max-width: 850px) {
+    .assignment-wrapper{
+        flex-direction: column;
+        min-height: 150px;
+        margin-bottom: 30px;
+    }
+}
+@media screen and (max-width: 450px) {
+    .assignment-functions{
+        flex-direction: column;
+        text-align: center;
+    }
+    .assignment-function-btn{
+        margin: 10px 10px;
+    }
+    .navbar{
+        font-size: 1em;
+    }
+    .title-logo-wrapper{
+        padding: 0px 6px;
+    }
+    .login-info-btn{
+        padding: 15px 6px;
+    }
+    .page-title{
+        padding: 15px 6px;
+    }
+    #search-assignments{
+        font-size: 1em;
+        padding: 11px 10px;
+    }
+    .taskbar-container{
+        font-size: 1em;
+    }
 }
