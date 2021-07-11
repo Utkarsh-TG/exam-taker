@@ -53,8 +53,8 @@
                     <div class="blocked-window">
                         <div class="block-messg">You have been blocked! Ask your teacher to unblock to continue paper.</div>
                     </div>
-                    <div class="question-paper-wrapper">
-                        <iframe id="question-paper" src="" frameborder="0"></iframe>
+                    <div class="question-paper-wrapper" id="question-paper-wrapper">
+
                     </div>
                     <div class="asnwer-form-wrapepr">
                         <div id="answer-form">
@@ -88,6 +88,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script> 
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-storage.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
     <script>
         username = "{{ username }}"
         userClass = "{{ class }}"
@@ -159,11 +160,36 @@
 
 
         //on exam start
-        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat
+        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked;
+
+        const displayExamPaper = (file) => {
+            var url = file;
+
+            pdfjsLib.disableWorker = true;
+
+            pdfjsLib.getDocument(url).then(function getPdfHelloWorld(pdf) {
+                parent = document.getElementById('question-paper-wrapper')
+                for(let i=0;i<pdf.numPages;i++){
+                    pdf.getPage(i).then((page) => {
+                        canvas = document.createElement('canvas')
+                        canvas.classList.add('question-paper-page')
+                        var scale = 1.5;
+                        var viewport = page.getViewport(scale);
+
+                        var context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        page.render({canvasContext: context, viewport: viewport});
+                        parent.appendChild(canvas)
+                    })
+                }
+            });
+        }
 
         const designExamForm = (data) => {
             $('.exam-info-bar').html(data['title'])
-            $('#question-paper').attr('src' , data['file'])
+            displayExamPaper(data['file'])
             displayChat()
         }
 
@@ -260,6 +286,7 @@
 
         const generateWarning = (err_message, type) => {
             if(type == 'show'){
+                $('.warning-display').css({'display':'flex'})
                 $('.warning-display').fadeIn(200)
                 $('#warning-msg').html(err_message)
             }
@@ -298,7 +325,11 @@
 
                 $(window).blur(function() {
                     //issue block
-                    uploadStudentBlock()
+                    if ($('iframe').is(':focus')) {
+                        // dont block
+                    }else{
+                        uploadStudentBlock()
+                    }
                 });
                 $('#lava-zone').mouseenter(() => {
                     document.getElementById('lava-zone').classList.add('warning-assignment')
@@ -317,39 +348,43 @@
         }
 
         const uploadStudentWarning = () => {
-            //show warning
-            dateToday = new Date()
-            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
-            $.ajax({
-                type: 'POST',
-                url: '/student/exam/warn/',
-                data:{
-                    user: username,
-                    assignment: assignmentTitle,
-                    section: userSection,
-                    class: userClass,
-                    time: _time,
-                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                }
-            });
+            if(!blocked){
+                //show warning
+                dateToday = new Date()
+                _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                $.ajax({
+                    type: 'POST',
+                    url: '/student/exam/warn/',
+                    data:{
+                        user: username,
+                        assignment: assignmentTitle,
+                        section: userSection,
+                        class: userClass,
+                        time: _time,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    }
+                });
+            }
         }
 
         const uploadStudentBlock = () => {
-            //make block request
-            dateToday = new Date()
-            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
-            $.ajax({
-                type: 'POST',
-                url: '/student/exam/block/',
-                data:{
-                    user: username,
-                    assignment: assignmentTitle,
-                    section: userSection,
-                    class: userClass,
-                    time: _time,
-                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                }
-            });
+            if(!blocked){
+                //make block request
+                dateToday = new Date()
+                _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                $.ajax({
+                    type: 'POST',
+                    url: '/student/exam/block/',
+                    data:{
+                        user: username,
+                        assignment: assignmentTitle,
+                        section: userSection,
+                        class: userClass,
+                        time: _time,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    }
+                });
+            }
         }
         
         const checkUserBlock = () => {
@@ -357,8 +392,10 @@
             ref.on('value', (dataSnapshot)=>{
                 userBlockData = dataSnapshot.val()
                 if(userBlockData['blocked'] == 'true'){
+                    blocked = true
                     $('.blocked-window').css({'display':'flex'})
                 }else if(userBlockData['blocked'] == 'false'){
+                    blocked = false
                     $('.blocked-window').css({'display':'none'})
                 }
             })
@@ -410,10 +447,11 @@
                         if(attendees[i]['id'] == username){
                             //user already gave exam
                             //alert('You already gave exam')
-                            //firstAttempt() // only for testing
+                            firstAttempt() // only for testing
                             return
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
+                            loadWindow('mid', 3000)
                             firstAttempt()
                         }
                     } 
@@ -425,7 +463,6 @@
                 ref.on('value', function(dataSnapshot){
                     if(!started){
                         attendeeList = dataSnapshot.val()
-                        console.log(attendeeList)
                         if(attendeeList != null){
                             Object.entries(attendeeList).forEach(
                                 ([key, value]) => attendees.push(value)
@@ -441,12 +478,14 @@
 
         const startTest = (e) => {
             let target = e.parentNode.parentNode.children[0].children[0];
-            loadWindow('mid', 3000)
             openAssignment(target.textContent)
         }
+
+        /*
         window.oncontextmenu = function () {
             return false;
         }
+
         document.onkeydown = function (e) { 
             if (window.event.keyCode == 123 || e.button==2){ // f12 or right click
                 return false
@@ -472,7 +511,9 @@
                     }
                 } 
             }
-        }
+        }*/
+
+
         //chat
         var chatData, old_chat_data
 
