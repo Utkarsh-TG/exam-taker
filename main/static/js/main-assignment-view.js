@@ -41,12 +41,14 @@ function generateAssignmentChat(){
             parent.appendChild(chat)
         }
     }
+    $("#chat-log").scrollTop($("#chat-log")[0].scrollHeight);
 }
 
 function generateChatUI(){
     title = currentAssignmentTitle
     _currentSection = currentSection
-    let ref = firebase.database().ref("Chat"+'/'+ title+'/'+ _currentSection);
+    _class = currentClass
+    let ref = firebase.database().ref("Chat"+'/'+_class+'/'+title+'/'+ _currentSection);
     ref.on('value', function(dataSnapshot){
         chat_data = dataSnapshot.val()
         generateAssignmentChat()
@@ -125,7 +127,8 @@ function generateAssignmentWarning(){
 function generateWarningUI(){
     title = currentAssignmentTitle
     _currentSection = currentSection
-    let ref = firebase.database().ref("Warnings"+'/'+ title+'/'+ _currentSection);
+    _class = currentClass
+    let ref = firebase.database().ref("Warnings" + '/' + currentClass + '/' + title+'/'+ _currentSection);
     ref.on('value', function(dataSnapshot){
         warning_data = dataSnapshot.val()
         generateAssignmentWarning()        
@@ -175,7 +178,8 @@ function generateAssignmentAttendee(){
 function generateAttendeesUI(){
     title = currentAssignmentTitle
     _currentSection = currentSection
-    let ref = firebase.database().ref("TurnedIn"+'/'+ title+'/'+ _currentSection);
+    _class = currentClass
+    let ref = firebase.database().ref("TurnedIn" + '/' + currentClass + '/' + title+'/'+ _currentSection);
     ref.on('value', function(dataSnapshot){
         attendee_data = dataSnapshot.val()
         generateAssignmentAttendee()        
@@ -183,6 +187,7 @@ function generateAttendeesUI(){
 }
 
 function viewAssignmentWindow(){
+    loadWindow('mid', 1000)
     title = currentAssignmentTitle
     $('#assignment-conduct-title').html(title);
     generateChatUI();
@@ -191,6 +196,7 @@ function viewAssignmentWindow(){
 }
 
 $('#section-list').on('change', function(){
+    loadWindow('mid', 1000)
     currentSection = $('#section-list').val()
     document.getElementById('chat-log').innerHTML = ''
     document.getElementById('warning-log').innerHTML = ''
@@ -201,6 +207,7 @@ $('#section-list').on('change', function(){
 })
 
 $('#return-view-assignment').click(function(){
+    loadWindow('mid', 1000)
     $('.create-task-wrapper').css({'display':'none'});
     $('.assignments-container').css({'display':'block'});
     $('.assignment-window').css({'display':'none'});
@@ -255,6 +262,7 @@ function submitChatMessage(){
     _section = currentSection
     _message = $('#chat-input').val()
     _user = $('.user-info').text()
+    _class = currentClass
     dateToday = new Date()
     _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
     if(!_message.trim() == ''){
@@ -267,6 +275,7 @@ function submitChatMessage(){
                 assignment: assignmentname,
                 section: _section,
                 time: _time,
+                class: _class,
                 csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
             },success: function(){
                 $('#chat-input').val('')

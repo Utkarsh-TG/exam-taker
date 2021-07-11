@@ -1,5 +1,6 @@
 // create assignment 
-var file, file_URL, today, thisref;
+var file, today, thisref, file_URL;
+
 //firebase config
 var firebaseConfig = {
     apiKey: "AIzaSyD7ddl63JBC-Xxj2vKe99R5JJkxBJDvTVY",
@@ -20,8 +21,11 @@ var storage = firebase.storage();
 var storageref = storage.ref('Assignments').child(currentClass);
 
 $(document).on('submit', '#create-assignment', function(e){
+    loadWindow('mid', 2000)
     e.preventDefault()
-    storageref = storage.ref('Assignments').child(currentClass);
+    file_URL = []
+    storageRef = storage.ref('Assignments').child(currentClass).child($('#assignment-title-input').val());
+    // uploading file this storage ref
     file = document.getElementById("assignment-file-input").files[0];
     // uploading file this storage ref
     thisref = storageref.child(file.name).put(file);

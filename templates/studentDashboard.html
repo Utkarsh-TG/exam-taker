@@ -23,6 +23,7 @@
         <div class="assignments-container" id="assignments-container"></div>
 
         <div class="assignment-window" id="assignment-window">
+            <div class="warning-display"><span id="warning-msg"></span></div>
             <div id="lava-zone"></div>
             <div class="assignment-window-inner">
                 <div class="left-pane">
@@ -53,7 +54,7 @@
                         <div class="block-messg">You have been blocked! Ask your teacher to unblock to continue paper.</div>
                     </div>
                     <div class="question-paper-wrapper">
-                        <img id="question-paper" src="" frameborder="0">
+                        <iframe id="question-paper" src="" frameborder="0"></iframe>
                     </div>
                     <div class="asnwer-form-wrapepr">
                         <div id="answer-form">
@@ -73,11 +74,12 @@
         <div class="final-submit-window">
             <div class="submit-window-inner">
                 <div class="upload-file-container">
-                    <input type="file" id="answer-file" multiple>
+                    <input type="file" id="answer-file" accept="application/pdf">
                     <div class="upload-file-btn" id="upload-file">Upload</div>
                 </div>
                 <div class="final-submit-btn" id="final-submit-btn">Submit</div>
             </div>
+            <div class="final-time-ticker"><span id="final-clock-container"></span></div>
         </div>
     </div>
     
@@ -90,6 +92,7 @@
         username = "{{ username }}"
         userClass = "{{ class }}"
         userSection = "{{ section }}"
+        var attendeeList, attendees;
 
         $('.error-message').css({'display':'{{ error_display }}'});
 
@@ -164,33 +167,107 @@
             displayChat()
         }
 
-        const startTimer = (data) => {
-            const convertHMS = (value) => {
-                let sec = parseInt(value, 10); // convert value to number if it's string
-                let hours   = Math.floor(sec / 3600); // get hours
-                let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
-                let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
-                // add 0 if value < 10; Example: 2 => 02
-                if (hours   < 10) {hours   = "0"+hours;}
-                if (minutes < 10) {minutes = "0"+minutes;}
-                if (seconds < 10) {seconds = "0"+seconds;}
-                return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
+        const convertHMS = (value) => {
+            let sec = parseInt(value, 10); // convert value to number if it's string
+            let hours   = Math.floor(sec / 3600); // get hours
+            let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
+            let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
+            // add 0 if value < 10; Example: 2 => 02
+            if (hours   < 10) {hours   = "0"+hours;}
+            if (minutes < 10) {minutes = "0"+minutes;}
+            if (seconds < 10) {seconds = "0"+seconds;}
+            return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
+        }
+        
+        const forceEndExam = (from) => {
+            let endTimeLeft = 300
+            const startEndExamTimer = setInterval(() => {
+                $('#final-clock-container').html(convertHMS(endTimeLeft))
+                endTimeLeft -= 1
+                if(endTimeLeft < 0){
+                    const forcePostAnswers = () => {
+                        dateToday = new Date()
+                        _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                        $.ajax({
+                            type: 'POST',
+                            url: '/student/exam/submit/',
+                            data:{
+                                user: username,
+                                class: userClass,
+                                section: userSection,
+                                title: assignmentTitle,
+                                time: _time,
+                                textanswer: $('#text-answers').val(),
+                                file: answerFileURL,
+                                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                            },success: () => {
+                                //show loading
+                                loadWindow('mid', 3000)
+                                $('.assignments-container').css({'display':'block'})
+                                $('.assignment-window').css({'display':'none'})
+                                $('.final-submit-window').css({'display':'none'})
+                                $('.submit-warning').css({'display':'none'})
+                            }
+                        })
+                    }
+
+                    clearInterval(startEndExamTimer);
+                    storageRef = storage.ref('Results').child(userClass).child(assignmentTitle).child(userSection).child(username);
+
+                    file = document.getElementById("answer-file").files[0];
+                    // uploading file this storage ref
+                    if(file){
+                        thisref = storageRef.child(file.name).put(file);
+                        thisref.on('state_changed',function(snapshot) {
+                            console.log('Done');
+                        }, function(error) {
+                            console.log('Error',error);
+                        }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                                answerFileURL = downloadURL
+                                forcePostAnswers()
+                            });
+                        });
+                    }else{
+                        forcePostAnswers()
+                    }
+                }
+            }, 1000)
+            //display warning
+            if(from == 'forced'){
+                $('.error-message').css({'display':'flex'})
+                $('#error-msg').html('Timeover, Upload and submit before auto submit!')
             }
+            _preventCheat = false
+            $('.final-submit-window').css({'display':'flex'})
+            $('.assignment-window').css({'display':'none'})
+        }
+
+        const startTimer = (data) => {
             if(!stopTimer){
                 timeLeft = Number(data['time'])*60
-                setInterval(()=>{
+                const timerInterval = setInterval(()=>{
                     $('#clock-container').html(convertHMS(timeLeft))
                     timeLeft -= 1
-                    if(timeLeft <= 0){
+                    if(timeLeft < 0){
+                        clearInterval(timerInterval);
                         stopTimer = true;
-                        timeOver = true;
+                        loadWindow('mid', 2000)
+                        forceEndExam('forced')
                     }
                 }, 1000)
             }
         }
-        const generateWarning = (err_message) => {
 
+        const generateWarning = (err_message, type) => {
+            if(type == 'show'){
+                $('.warning-display').fadeIn(200)
+                $('#warning-msg').html(err_message)
+            }
+            if(type == 'hide'){
+                $('.warning-display').fadeOut(200)
+            }
         }
+
         const generateBlock = (method) => {
             if(method == 'hide'){
                 $('.blocked-window').css({'display':'none'})    
@@ -199,16 +276,19 @@
                 $('.blocked-window').css({'display':'flex'})
             }
         }
+
         const preventCheat = () => {
-            _preventCheat = false //make it true
+            _preventCheat = true //make it true
             if(_preventCheat){
                 document.addEventListener('fullscreenchange', (e) => {
                     e.preventDefault()
                     if (document.fullscreenElement) {
                         console.log('fullscreen enter');
+                        generateWarning('', 'hide')
                     } else {
-                        console.log('fullscreen exit')
-                        alert('Exiting fullscreen will end paper')
+                        //render warning
+                        uploadStudentWarning()
+                        generateWarning('Warning! Return to full screen to continue paper.', 'show')
                     }
                 });
                 window.addEventListener('beforeunload', function (e) {
@@ -217,19 +297,26 @@
                 });
 
                 $(window).blur(function() {
-                    alert('cheat alert')
+                    //issue block
+                    uploadStudentBlock()
                 });
                 $('#lava-zone').mouseenter(() => {
+                    document.getElementById('lava-zone').classList.add('warning-assignment')
+                    //post, render warning
+                    generateWarning('Warning! Exit lavazone to continue paper.', 'show')
+                    uploadStudentWarning()
                     $('#assignment-window').addClass('warning-assignment')
                 })
-                $('.assignment-window-inner').mouseenter(() => {
+                $('.warning-display').mouseenter(() => {
+                    document.getElementById('lava-zone').classList.remove('warning-assignment')
+                    //remove warning
+                    generateWarning('', 'hide')
                     $('#assignment-window').removeClass('warning-assignment')
                 })
             }
         }
 
-        const uploadStudentWarning = (mssg) => {
-            generateWarning(mssg)
+        const uploadStudentWarning = () => {
             //show warning
             dateToday = new Date()
             _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
@@ -265,38 +352,101 @@
             });
         }
         
+        const checkUserBlock = () => {
+            let ref = database.ref('Login/student').child(userClass).child(userSection).child(username)
+            ref.on('value', (dataSnapshot)=>{
+                userBlockData = dataSnapshot.val()
+                if(userBlockData['blocked'] == 'true'){
+                    $('.blocked-window').css({'display':'flex'})
+                }else if(userBlockData['blocked'] == 'false'){
+                    $('.blocked-window').css({'display':'none'})
+                }
+            })
+        }
+
         const beginTest = (data) => {
-            console.log(data)
             assignmentTitle = data['title']
             preventCheat()
             startTimer(data)
             designExamForm(data)
+            checkUserBlock()
         }
 
         const openAssignment = (assignmentName) => {
+            var started = false;
             if(assignment_data[assignmentName]['assigned'] == 'true' && assignment_data[assignmentName]['ended'] == 'false'){
-                elem = document.querySelector('body')
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) { /* Safari */
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 */
-                    elem.msRequestFullscreen();
+                const firstAttempt = () => {
+                    started = true;
+                    dateToday = new Date()
+                    _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                    $.ajax({
+                        type: 'POST',
+                        url: '/student/exam/attendee/',
+                        data:{
+                            user: username,
+                            class: userClass,
+                            assignment: assignment_data[assignmentName]['title'],
+                            section: userSection,
+                            time: _time,
+                            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                        }
+                    });
+                    elem = document.querySelector('body')
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.webkitRequestFullscreen) { /* Safari */
+                        elem.webkitRequestFullscreen();
+                    } else if (elem.msRequestFullscreen) { /* IE11 */
+                        elem.msRequestFullscreen();
+                    }
+                    $('.assignments-container').css({'display':'none'})
+                    $('#assignment-window').css({'display':'flex'})
+                    beginTest(assignment_data[assignmentName])
                 }
-                $('.assignments-container').css({'display':'none'})
-                $('#assignment-window').css({'display':'flex'})
-                beginTest(assignment_data[assignmentName])
+
+                const checkUserInAttendees = () => {
+                    // check if user already in attendee
+                    for(let i = 0; i < attendees.length; i++){
+                        if(attendees[i]['id'] == username){
+                            //user already gave exam
+                            //alert('You already gave exam')
+                            //firstAttempt() // only for testing
+                            return
+                        }
+                        else if(attendees[i]['id'] != username && i == attendees.length - 1){
+                            firstAttempt()
+                        }
+                    } 
+                }
+
+                attendees = []
+                let ref = firebase.database().ref("TurnedIn"+'/'+userClass+'/'+assignment_data[assignmentName]['title']+'/'+ userSection);
+
+                ref.on('value', function(dataSnapshot){
+                    if(!started){
+                        attendeeList = dataSnapshot.val()
+                        console.log(attendeeList)
+                        if(attendeeList != null){
+                            Object.entries(attendeeList).forEach(
+                                ([key, value]) => attendees.push(value)
+                            );
+                            checkUserInAttendees()
+                        }else{
+                            firstAttempt()
+                        }
+                    }
+                })
             }
         }
 
         const startTest = (e) => {
             let target = e.parentNode.parentNode.children[0].children[0];
+            loadWindow('mid', 3000)
             openAssignment(target.textContent)
         }
-        /*
         window.oncontextmenu = function () {
             return false;
-            }
+        }
         document.onkeydown = function (e) { 
             if (window.event.keyCode == 123 || e.button==2){ // f12 or right click
                 return false
@@ -323,9 +473,9 @@
                 } 
             }
         }
-        */
         //chat
         var chatData, old_chat_data
+
         const generateChatMessage = (data) => {
             let parent = document.getElementById('chat-log')
             chatData = data
@@ -370,11 +520,9 @@
         }
 
         const displayChat = () => {
-            let ref = firebase.database().ref("Chat"+'/'+ assignmentTitle+'/'+ userSection );
-            console.log("Chat"+'/'+ assignmentTitle+'/'+ userSection)
+            let ref = firebase.database().ref("Chat"+'/'+userClass+'/'+assignmentTitle+'/'+ userSection);
             ref.on('value', function(dataSnapshot){
                 let chat_data = dataSnapshot.val()
-                console.log(chat_data)
                 generateChatMessage(chat_data)
             })
         }
@@ -400,6 +548,7 @@
                     data:{
                         user: _user,
                         message: _message,
+                        class: userClass,
                         assignment: assignmentname,
                         section: _section,
                         time: _time,
@@ -420,7 +569,9 @@
         });
         $('#open-final-submit').on('click', ()=>{
             _preventCheat = false
+            loadWindow('mid', 3000)
             $('.final-submit-window').css({'display':'flex'})
+            forceEndExam('non-forced')
         })
         $('#close-submit-btn').on('click', ()=>{
             $('.submit-warning').css({'display':'none'})
@@ -429,40 +580,46 @@
         var answerFileURL = []
 
         $('#final-submit-btn').on('click', () => {
-            storageRef = storage.ref('Results').child(assignmentTitle).child(userClass).child(userSection).child(username);
-            $("#answer-file").each(function(index, field){
-                for(var i=0;i<field.files.length;i++) {
-                    const file = field.files[i];
-                    thisref = storageRef.child(i.toString()).put(file)
-                    thisref.on('state_changed',function(snapshot) {
-                        console.log('Done');
-                    }, function(error) {
-                        console.log('Error',error);
-                    }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                            answerFileURL.push(downloadURL)
-                            if(i == field.files.length){
-                                console.log('yoyo')
-                                dateToday = new Date()
-                                _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '/student/exam/submit/',
-                                    data:{
-                                        user: username,
-                                        class: userClass,
-                                        section: userSection,
-                                        title: assignmentTitle,
-                                        time: _time,
-                                        textanswer: $('#text-answers').val(),
-                                        files: answerFileURL.toString(),
-                                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                                    }
-                                })
-                            }
-                        });
-                    });
-                }
+            storageRef = storage.ref('Results').child(userClass).child(assignmentTitle).child(userSection).child(username);
+
+            file = document.getElementById("answer-file").files[0];
+            // uploading file this storage ref
+            thisref = storageRef.child(file.name).put(file);
+            thisref.on('state_changed',function(snapshot) {
+                console.log('Done');
+            }, function(error) {
+                console.log('Error',error);
+            }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                    answerFileURL = downloadURL
+                    postAnswers()
+                });
             });
+
+            const postAnswers = () => {
+                dateToday = new Date()
+                _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                $.ajax({
+                    type: 'POST',
+                    url: '/student/exam/submit/',
+                    data:{
+                        user: username,
+                        class: userClass,
+                        section: userSection,
+                        title: assignmentTitle,
+                        time: _time,
+                        textanswer: $('#text-answers').val(),
+                        file: answerFileURL,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },success: () => {
+                        loadWindow('mid', 3000)
+                        //show loading
+                        $('.assignments-container').css({'display':'flex'})
+                        $('.assignment-window').css({'display':'none'})
+                        $('.final-submit-window').css({'display':'none'})
+                        $('.submit-warning').css({'display':'none'})
+                    }
+                })
+            }
         });
 
     </script>

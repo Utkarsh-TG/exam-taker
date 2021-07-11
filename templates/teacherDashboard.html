@@ -13,7 +13,10 @@
     <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
     <div class="container">
         <div class="navbar">
-            <div class="page-title">Teacher Dashboard</div>
+            <div class="title-logo-wrapper">
+                <img class="page-logo" src="{% static 'images/logo.png' %}"></img>
+                <div class="page-title">Teacher Dashboard</div>
+            </div>
             <div class="login-info">
                 <div class="user-info login-info-btn">{{ username }}</div>
                 <a class="logout-btn login-info-btn" href='/logout/'>Logout</a>
@@ -33,7 +36,7 @@
         <div class="work-window">
             <div class="create-task-wrapper">
                 <div class="create-assignment-form-container">
-                    <div class="return-back-btn" id="hide-new-assignment-form-btn">Back</div>
+                    <div class="return-back-btn" id="hide-new-assignment-form-btn">BACK</div>
                     <form id="create-assignment">
                         {% csrf_token %}
                         <div class="title-time-wrapper">
@@ -42,7 +45,7 @@
                         </div>
                         <textarea rows="5" cols="40" name="progress" id="assignment-description-input" required class="assignment-form-input" placeholder="Description" autocomplete="off"></textarea>
                         <div class="assignment-file-wrapper">
-                            <input type="file" name="files[]" id="assignment-file-input">
+                            <input type="file" name="files[]" id="assignment-file-input" accept="application/pdf">
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="assignment-form-submit">
                     </form>
@@ -54,15 +57,18 @@
                         </div>
                         <textarea rows="5" cols="40" name="progress" id="update-description-input" required class="assignment-form-input" placeholder="Description" autocomplete="off"></textarea>
                         <div class="assignment-file-wrapper">
-                            <input type="file" name="files[]" id="update-file-input">
+                            <input type="file" name="files[]" id="update-file-input" accept="application/pdf">
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="update-form-submit">
-                        <iframe src="" height="500" width="850" id="file-viewer"></iframe>
+                        <iframe id="file-viewer" src="" frameborder="0"></iframe>
                     </form>
                 </div>
             </div>
-            <div class="assignments-container" id="assignment-container">
-                
+            <div class="assignments-container">
+                <div class="assignment-search-wrapper">
+                    <input type="text" id="search-assignments" placeholder="Search..">
+                </div>
+                <div id="assignment-container"></div>
             </div>
             <div class="assignment-window">
                 <div class="section-selector">
@@ -106,6 +112,29 @@
                     </div>
                 </div>
             </div>
+            <div class="results-container">
+                <div class="section-wrapper">
+                    <div class="return-back-btn" id="back-btn-section-wrapper" onclick="returnSectionWrapper()">BACK</div>
+                    <div id="section-wrapper"></div>
+                </div>
+                <div class="students-wrapper">
+                    <div class="return-back-btn" id="back-btn-students-wrapper" onclick="returnStudentsWrapper()">BACK</div>
+                    <div id="students-wrapper">
+
+                    </div>
+                </div>
+                <div class="students-result-wrapper">
+                    <div class="return-back-btn" id="back-btn-student-result-wrapper" onclick="returnStudentResultWrapper()">BACK</div>
+                    <div class="students-result-inner">
+                        <div class="student-info-wrapper">
+                            <div id="student-id" class="student-info"></div>
+                            <div id="student-name" class="student-info"></div>
+                        </div>
+                        <div id="student-answers"></div>
+                        <iframe src="" frameborder="0" id="student-file"></iframe>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
@@ -118,12 +147,14 @@
         const classBtn = document.querySelectorAll('.class-list-btn')
 
         $("#hide-new-assignment-form-btn").click(function(){
+            loadWindow('mid', 1000)
             $('.create-task-wrapper').css({'display':'none'});
             $('.assignments-container').css({'display':'block'});
             $('#create-assignment').css({'display':'none'});
             $('#update-assignment').css({'display':'none'});
         });
         $("#show-new-assignment-form-btn").click(function(){
+            loadWindow('mid', 1000)
             $('.create-task-wrapper').css({'display':'block'});
             $('#create-assignment').css({'display':'block'});
             $('#update-assignment').css({'display':'none'});
@@ -185,7 +216,7 @@
         function getLastClass(){
             let lastClass = getCookie('teacherClass')
             currentClass = lastClass
-            document.getElementById('assignment-container').innerHTML = '';
+            $('#assignment-container').html('')
             fetchAssignments();
 
             if(!lastClass){
@@ -225,6 +256,7 @@
         }
 
         function fetchAssignments(){
+            loadWindow('mid', 1000)
             $.ajax({
                 type: 'POST',
                 url: '/teacher/exam/request/',
@@ -243,6 +275,13 @@
         fetchAssignments()
 
         function getClass(e){
+            $('.results-container, .assignment-window').css({'display':'none'})
+
+            if($('.create-task-wrapper').css('display') === 'none'){
+                console.log('hoho')
+                $('.assignments-container').css({'display':'block'})
+            }
+
             let thisTarget = e.target
             classBtn.forEach(button => { 
                 button.classList.remove('active-class-btn');
@@ -257,6 +296,31 @@
         classBtn.forEach(button => { 
             button.addEventListener('click', getClass);
         });
+
+        $('#chat-input').on("keypress", (e) => {
+            if(e.keyCode == '13'){
+                submitChatMessage()
+            }
+        })
+
+        $('#search-assignments').on("keyup", () => {
+            inputVal = document.getElementById('search-assignments').value.toUpperCase();
+            filterList = document.getElementsByClassName('assignment-wrapper')
+            if(inputVal){
+                for(let i=0; i < filterList.length; i++){
+                    _text = filterList[i].getElementsByTagName('div')[0].getElementsByTagName('span')[0].textContent.toUpperCase()
+                    if(_text.indexOf(inputVal) > -1){
+                        filterList[i].style.display = 'flex'
+                    }else{
+                        filterList[i].style.display = 'none'
+                    }
+                }
+            }else{
+                for(let i=0; i < filterList.length; i++){
+                    filterList[i].style.display = 'flex'
+                }
+            }
+        })
     </script>
     <script src="{% static 'js/create-new-assignment.js' %}"></script>
     <script src="{% static 'js/main-assignment-functions.js' %}"></script>
