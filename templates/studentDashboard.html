@@ -20,7 +20,12 @@
             </div>
         </div>
 
-        <div class="assignments-container" id="assignments-container"></div>
+        <div class="assignments-container">
+            <div class="assignment-search-wrapper">
+                <input type="text" id="search-assignments" placeholder="Search..">
+            </div>
+            <div id="assignments-container"></div>
+        </div>
 
         <div class="assignment-window" id="assignment-window">
             <div class="warning-display"><span id="warning-msg"></span></div>
@@ -158,6 +163,24 @@
 
         getAssignmentsUpdate()
 
+        $('#search-assignments').on("keyup", () => {
+            inputVal = document.getElementById('search-assignments').value.toUpperCase();
+            filterList = document.getElementsByClassName('assignment-wrapper')
+            if(inputVal){
+                for(let i=0; i < filterList.length; i++){
+                    _text = filterList[i].getElementsByTagName('div')[0].getElementsByTagName('span')[0].textContent.toUpperCase()
+                    if(_text.indexOf(inputVal) > -1){
+                        filterList[i].style.display = 'flex'
+                    }else{
+                        filterList[i].style.display = 'none'
+                    }
+                }
+            }else{
+                for(let i=0; i < filterList.length; i++){
+                    filterList[i].style.display = 'flex'
+                }
+            }
+        })
 
         //on exam start
         var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked;
