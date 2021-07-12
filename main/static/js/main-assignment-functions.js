@@ -16,7 +16,6 @@ function openTask(title, time, desc, fileURL){
     fileViewer = document.getElementById('file-viewer')
     fileViewer.src = fileURL
     oldTitle = title;
-    console.log(fileURL)
     oldFile = fileURL;
 }
 
