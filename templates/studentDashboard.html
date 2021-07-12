@@ -192,7 +192,7 @@
 
             pdfjsLib.getDocument(url).then(function getPdfHelloWorld(pdf) {
                 parent = document.getElementById('question-paper-wrapper')
-                for(let i=0;i<pdf.numPages;i++){
+                for(let i=1;i<pdf.numPages;i++){
                     pdf.getPage(i).then((page) => {
                         canvas = document.createElement('canvas')
                         canvas.classList.add('question-paper-page')
@@ -347,12 +347,7 @@
                 });
 
                 $(window).blur(function() {
-                    //issue block
-                    if ($('iframe').is(':focus')) {
-                        // dont block
-                    }else{
-                        uploadStudentBlock()
-                    }
+                    uploadStudentBlock()
                 });
                 $('#lava-zone').mouseenter(() => {
                     document.getElementById('lava-zone').classList.add('warning-assignment')
@@ -470,7 +465,6 @@
                         if(attendees[i]['id'] == username){
                             //user already gave exam
                             //alert('You already gave exam')
-                            firstAttempt() // only for testing
                             return
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
@@ -504,7 +498,6 @@
             openAssignment(target.textContent)
         }
 
-        /*
         window.oncontextmenu = function () {
             return false;
         }
@@ -534,7 +527,7 @@
                     }
                 } 
             }
-        }*/
+        }
 
 
         //chat
