@@ -107,12 +107,22 @@ body{
     justify-content: space-evenly;
     align-items: center;
 }
+.assignment-search-wrapper{
+    padding: 18px 27px;
+}
+#search-assignments{
+    outline: none;
+    border: 2px solid #000;
+    border-radius: 5px;
+    padding: 11px 15px;
+    font-size: 1.2em;
+}
 .assignment-function-btn{
     padding: 11px 15px;
     border-radius: 15px;
     margin: 0px 10px;
     background: #3f3f3f;
-    cursor: pointer;
+    cursor: not-allowed;
     color: #f2f2f2;
 }
 .assignment-window{
@@ -394,6 +404,11 @@ ul#rules-list li{
     letter-spacing: 7px;
     color: #4bbb50;
 }
+.assignment-start{
+    background-color: #f57474;
+    color: #000;
+    cursor: pointer;
+}
 @keyframes blinkWarning{
     0%{
         background: #f80000;
@@ -403,5 +418,42 @@ ul#rules-list li{
     }
     100%{
         background: #ff0000;
+    }
+}
+@media screen and (max-width: 850px) {
+    .assignment-wrapper{
+        flex-direction: column;
+    }
+    .assignment-functions{
+        margin-top: 20px;
+    }
+}
+@media screen and (max-width: 450px) {
+    .assignment-wrapper{
+        flex-direction: column;
+        font-size: 1em !important;
+    }
+    .assignment-info{
+        flex-direction: column;
+        text-align: center;
+    }
+    .assignment-title{
+        margin-bottom: 10px;
+    }
+    #search-assignments{
+        width: 100%;
+    }
+}
+@media screen and (max-width: 350px) {
+    .assignment-functions{
+        flex-direction: column;
+    }
+    .assignment-function-btn{
+        margin: 5px;
+    }
+    .nav-wrapper{
+        font-size: 0.99em !important;
+        align-items: center;
+        flex-direction: column;
     }
 }
