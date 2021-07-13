@@ -116,6 +116,7 @@
             appId: "1:647787494671:web:6afa3e03b1184d113c127a",
             measurementId: "G-2CTKYSPY7P"
         };
+
         firebase.initializeApp(firebaseConfig);
 
         var database = firebase.database();
@@ -126,9 +127,11 @@
             let parent = document.getElementById('assignments-container')
             parent.innerHTML = ''
             let assignmentData = []
-            Object.entries(assignment_data).forEach(
-                ([key, value]) => assignmentData.push(value)
-            );
+            if(assignment_data){
+                Object.entries(assignment_data).forEach(
+                    ([key, value]) => assignmentData.push(value)
+                );
+            }
             for(let i = 0; i < assignmentData.length; i++){
                 if(assignmentData[i]['assigned'] == 'true' && assignmentData[i]['ended'] == 'false'){
                     assignment = document.createElement('div')
@@ -153,11 +156,26 @@
             }
         }
 
+        const checkExamEnd = (data) => {
+            let _data = []
+            Object.entries(data).forEach(
+                ([key, value]) => _data.push(value)
+            );
+            for(let i=0;i<_data.length;i++){
+                if(assignmentTitle == _data[i]['title']){
+                    if(_data[i]['ended'] == "true"){
+                        forceEndExam('forced')
+                    }
+                }
+            }
+        }
+
         const getAssignmentsUpdate = () => {
             let ref = database.ref('Assignments').child(userClass);
             ref.on('value', function(dataSnapshot){
                 assignment_data = dataSnapshot.val()
                 generateAssignmentList()
+                checkExamEnd(assignment_data)
             });
         }
 
@@ -502,32 +520,29 @@
             return false;
         }
 
-        document.onkeydown = function (e) { 
-            if (window.event.keyCode == 123 || e.button==2){ // f12 or right click
-                return false
-            }    
-            else if(window.event.keyCode == 17){ // ctrl
-                document.onkeydown = function (e) {
-                    if (window.event.keyCode == 16){ // shift
-                        document.onkeydown = function (e) {
-                            if (window.event.keyCode == 73){ // i
-                                return false
-                            }
-                        }
-                    }
-                }
+        $(document).ready(function(){
+            $('body').bind('cut copy paste', (e) => {
+                e.preventDefault();
+            });
+        });
+
+        $(document).ready(function(){  
+            $("body").bind("contextmenu", function(e) {  
+                return false;  
+            });  
+        }); 
+
+        $(document).keydown(function (event) {
+            if (event.keyCode == 123) {
+                return false;
             }
-            else if(window.event.keyCode == 17){ // ctrl
-                document.onkeydown = function (e) {
-                    if (window.event.keyCode == 67){ // c
-                        return false
-                    }
-                    else if(window.event.keyCode == 86){ // v
-                        return false
-                    }
-                } 
+            if (event.ctrlKey && (event.keyCode === 85 || event.keyCode === 83 || event.keyCode ===65 )){
+                return false;
             }
-        }
+            else if (event.ctrlKey && event.shiftKey && event.keyCode === 73){
+                return false;
+            }
+        });
 
 
         //chat
