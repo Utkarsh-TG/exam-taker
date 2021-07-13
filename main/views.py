@@ -364,9 +364,7 @@ def examChatMessage(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(login)
-    if 'loggedIn' in request.COOKIES:
-        if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+        
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
