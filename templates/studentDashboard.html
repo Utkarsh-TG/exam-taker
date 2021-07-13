@@ -481,9 +481,7 @@
                     // check if user already in attendee
                     for(let i = 0; i < attendees.length; i++){
                         if(attendees[i]['id'] == username){
-                            //user already gave exam
-                            //alert('You already gave exam')
-                            return
+                            alert('You already gave exam')
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
                             loadWindow('mid', 3000)
