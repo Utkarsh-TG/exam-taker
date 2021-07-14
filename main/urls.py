@@ -3,7 +3,9 @@ from main import views
 
 urlpatterns = [
     path('ignition/', views.ignition),
+    path('signup/', views.signup),
     path('login/', views.login),
+    path('student/signup/', views.studentSignup),
     path('teacher/login/', views.teacherLogin),
     path('student/login/', views.studentLogin),
     path('teacher/dashboard/', views.teacherDashboard),

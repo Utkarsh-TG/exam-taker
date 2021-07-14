@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
 </head>
 <body>
+    {% include 'loading.html' %}
     <div class="container">
         <div class="login-forms-wrapper">
             <div class="choose-form">
@@ -18,11 +19,11 @@
             <div class="student-login-form-wrapper form-wrapper" id="student-login-form-wrapper">
                 <form id="student-login-form" class="login-form" method="POST" action="/student/login/">
                     {% csrf_token %}
-                    <input type="text" placeholder="Enter Username" id="student-login-username" class="form-input" name="student-username">
-                    <input type="password" placeholder="Enter Password" id="student-login-password" class="form-input" name="student-password">
+                    <input type="text" placeholder="Enter Username" id="student-login-username" class="form-input" name="student-username" required>
+                    <input type="password" placeholder="Enter Password" id="student-login-password" class="form-input" name="student-password" required>
                     <div class="class-input-fields">
-                        <input type="text" placeholder="Enter Class" id="student-login-class" class="form-input-class" name="student-class">
-                        <input type="text" placeholder="Enter Section" id="student-login-section" class="form-input-class" name="student-section">
+                        <input type="text" placeholder="Enter Class" id="student-login-class" class="form-input-class" name="student-class" required>
+                        <input type="text" placeholder="Enter Section" id="student-login-section" class="form-input-class" name="student-section" required>
                     </div>
                     <input type="submit" value="Login" id="submit-student-login" class="form-submit">
                 </form>
@@ -30,8 +31,8 @@
             <div class="teacher-login-form-wrapper form-wrapper" id="teacher-login-form-wrapper">
                 <form id="teacher-login-form" class="login-form" method="POST" action="/teacher/login/">
                     {% csrf_token %}
-                    <input type="text" placeholder="Enter Username" id="teacher-login-username" class="form-input" name="teacher-username">
-                    <input type="password" placeholder="Enter Password" id="teacher-login-password" class="form-input" name="teacher-password">
+                    <input type="text" placeholder="Enter Username" id="teacher-login-username" class="form-input" name="teacher-username" required>
+                    <input type="password" placeholder="Enter Password" id="teacher-login-password" class="form-input" name="teacher-password" required>
                     <input type="submit" value="Login" id="submit-teacher-login" class="form-submit">
                 </form>
             </div>

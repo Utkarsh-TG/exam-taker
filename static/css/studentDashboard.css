@@ -204,6 +204,7 @@ ul#rules-list li{
     background: #f80000;
 }
 .assignment-chat{
+    min-height: 50%;
     max-height: 50%;
     width: 100%;
     flex: 3;
@@ -515,6 +516,7 @@ ul#rules-list li{
     .assignment-chat{
         min-width: 100%;
         min-height: fit-content;
+        max-height: 100%;
     }
     .right-pane{
         margin-top: 330px;
@@ -530,6 +532,9 @@ ul#rules-list li{
     .assignment-wrapper{
         flex-direction: column;
         font-size: 1em !important;
+    }
+    #lava-zone{
+        display: none;
     }
     .assignment-info{
         flex-direction: column;
