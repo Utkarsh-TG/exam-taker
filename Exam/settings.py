@@ -1,13 +1,18 @@
 import os
+import json
 from pathlib import Path
 import django_heroku
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
-SECRET_KEY = 'django-insecure-0im87@8epz^&$k(0=87va0o==9+*d0%xh5!)&p2e=tvrin*3o^'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG")
 
 ALLOWED_HOSTS = ['.herokuapp.com', '127.0.0.1']
 
@@ -106,20 +111,28 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = '/static/'
- 
+STATIC_URL = os.path.join(BASE_DIR, 'static')
+print(STATIC_URL)
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+#django intialize
 django_heroku.settings(locals())
 
+#firebase config
+FIREBASE_DIR = os.path.join(SETTINGS_PATH, 'Exam', "firebase_config.json")
+with open(FIREBASE_DIR, "r") as f:
+    FIREBASE_CONFIG = json.loads(f.read())
+
+#email backend config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'test@gmail.com'
-DEFAULT_FROM_EMAIL = 'test@gmail.com'
-SERVER_EMAIL = 'test@gmail.com'
-EMAIL_HOST_PASSWORD = 'test'
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
+SERVER_EMAIL = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")

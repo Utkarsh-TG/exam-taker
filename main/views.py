@@ -1,26 +1,20 @@
+import json
+from json import dumps
 from django.http import request
 from django.http.response import JsonResponse
-from main.models import *
 from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.template import RequestContext
-from .forms import DocumentForm
+from django.conf import settings
 import pyrebase
+from main.models import *
+from .forms import DocumentForm
 
 #firebase config
-config = {
-    "apiKey": "AIzaSyD7ddl63JBC-Xxj2vKe99R5JJkxBJDvTVY",
-    "authDomain": "exam-3d397.firebaseapp.com",
-    "databaseURL": "https://exam-3d397-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "projectId": "exam-3d397",
-    "storageBucket": "exam-3d397.appspot.com",
-    "messagingSenderId": "647787494671",
-    "appId": "1:647787494671:web:6afa3e03b1184d113c127a",
-    "measurementId": "G-2CTKYSPY7P"
-}
+config = settings.FIREBASE_CONFIG
 
-firebase=pyrebase.initialize_app(config)
+firebase = pyrebase.initialize_app(config)
 
 #initializing firebase database
 db=firebase.database()
@@ -36,12 +30,33 @@ def ignition(request):
 
 def home(request):
     #check if already logged in
+    return render(request, 'index.html')
+
+def signup(request):
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') == 'teacher':
             return redirect(teacherDashboard)
         elif request.COOKIES.get('loggedIn') == 'student':
             return redirect(studentDashboard)
-    return render(request, 'index.html')
+    
+    return render(request, 'signup.html')
+
+def studentSignup(request):
+    if request.method == 'POST':
+        uid = request.POST.get('uid')
+        username = request.POST.get('name')
+        _section = (request.POST.get('section')).upper()
+        password = request.POST.get('password')
+        _class = "10"
+
+        #db reference
+        data = {'blocked':False, 'id':uid, 'username':username, 'class':_class, 'section':_section, 'password':password}
+
+        if _class in validateList[0] and _section in validateList[1]:
+            db.child('Login').child('student').child(_class).child(_section).child(uid).set(data)
+            return redirect(login)
+
+    return redirect(signup)    
 
 def login(request):
     #check if already logged in
@@ -120,6 +135,7 @@ def studentLogin(request):
         #validate class & section
         if studentClass not in validateList[0]:
             return render(request, 'login.html', {'error':'Login Failed! Ivalid Class'})
+
         if studentSection not in validateList[1]:
             return render(request, 'login.html', {'error':'Login Failed! Ivalid Section'})
 
@@ -161,7 +177,7 @@ def teacherDashboard(request):
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
-        return render(request, 'teacherDashboard.html', {'username':currentUser})
+        return render(request, 'teacherDashboard.html', {'username':currentUser, 'FIREBASE_CONFIG':dumps(config)})
     
     return redirect(login)
 
@@ -403,7 +419,7 @@ def examBlockStudent(request):
         assignmentName = request.POST['assignment']
         time = request.POST['time']
         
-        data = {'blocked':'true'}
+        data = {'blocked':True}
 
         #ref database/Login/student/class/section/username
         db.child('Login').child('student').child(_class).child(_section).child(username).update(data)
@@ -434,7 +450,7 @@ def examUnblockStudent(request):
         assignmentName = request.POST['assignment']
         time = request.POST['time']
         
-        data = {'blocked':'false'}
+        data = {'blocked':False}
 
         #ref database/Login/student/class/section/username
         userData = db.child('Login').child('student').child(_class).child(_section).child(username).get().val()
@@ -468,7 +484,7 @@ def studentDashboard(request):
     if 'section' in request.COOKIES:
         currentSection = request.COOKIES.get('section')
 
-    return render(request, 'studentDashboard.html', {'username':currentUser, 'class':currentClass, 'section':currentSection})
+    return render(request, 'studentDashboard.html', {'username':currentUser, 'class':currentClass, 'section':currentSection, 'FIREBASE_CONFIG':dumps(config)})
 
 def studentExamSubmit(request):
     #return if not logged in as student
@@ -527,7 +543,7 @@ def studentExamWarn(request):
 
         banData = {'error':'warned', 'id':_user, 'name':userData['username']}
 
-        if(userData['blocked'] == 'false'):
+        if not userData['blocked']:
             #ref database/Warnings/class/assignment/section/time
             db.child('Warnings').child(_class).child(_assignment).child(_section).child(_time).set(banData)
         
@@ -556,11 +572,11 @@ def studentExamBlock(request):
         #getting user data
         userData = db.child('Login').child('student').child(_class).child(_section).child(_user).get().val()
 
-        data = {'blocked':'true'}
+        data = {'blocked':True}
 
         banData = {'error':'banned', 'id':_user, 'name':userData['username']}
 
-        if(userData['blocked'] == 'false'):
+        if not userData['blocked']:
             #ref database/Login/student/class/section/username
             db.child('Login').child('student').child(_class).child(_section).child(_user).update(data)
 

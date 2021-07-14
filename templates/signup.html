@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+</head>
+<body>
+    <div class="container">
+        <div class="signup-form-wrapper">
+            <form id="signup-form" method="POST" action="/student/signup/">
+                {% csrf_token %}
+                <input type="text" id="input-id" name="uid" placeholder="ID" required>
+                <input type="text" id="input-name" name="name" placeholder="Full Name" required>
+                <input type="text" id="input-section" name="section" placeholder="Section" required>
+                <input type="password" id="input-pass" name="password" placeholder="Password" required>
+                <input type="submit" value="Signup" id="form-submit">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -106,16 +106,7 @@
             $('.error-message').fadeOut(500);
         });
 
-        var firebaseConfig = {
-            apiKey: "AIzaSyD7ddl63JBC-Xxj2vKe99R5JJkxBJDvTVY",
-            authDomain: "exam-3d397.firebaseapp.com",
-            databaseURL: "https://exam-3d397-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "exam-3d397",
-            storageBucket: "exam-3d397.appspot.com",
-            messagingSenderId: "647787494671",
-            appId: "1:647787494671:web:6afa3e03b1184d113c127a",
-            measurementId: "G-2CTKYSPY7P"
-        };
+        var firebaseConfig = JSON.parse('{{ FIREBASE_CONFIG|escapejs }}')
 
         firebase.initializeApp(firebaseConfig);
 
@@ -427,10 +418,10 @@
             let ref = database.ref('Login/student').child(userClass).child(userSection).child(username)
             ref.on('value', (dataSnapshot)=>{
                 userBlockData = dataSnapshot.val()
-                if(userBlockData['blocked'] == 'true'){
+                if(userBlockData['blocked']){
                     blocked = true
                     $('.blocked-window').css({'display':'flex'})
-                }else if(userBlockData['blocked'] == 'false'){
+                }else if(!userBlockData['blocked']){
                     blocked = false
                     $('.blocked-window').css({'display':'none'})
                 }
