@@ -106,5 +106,5 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
-#
+# api config
 *config.json
