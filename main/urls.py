@@ -5,9 +5,9 @@ urlpatterns = [
     path('ignition/', views.ignition),
     path('signup/', views.signup),
     path('login/', views.login),
-    path('student/signup/', views.studentSignup),
-    path('user/login/teacher/', views.teacherLogin),
-    path('user/login/student/', views.studentLogin),
+    path('student_signup/', views.studentSignup),
+    path('user_login/', views.userLogin),
+    path('chat_message/', views.examChatMessage),
     path('logout/', views.logout),
     path('', views.home),
 ]
