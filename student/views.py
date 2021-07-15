@@ -9,6 +9,7 @@ from django.template import RequestContext
 from django.conf import settings
 import pyrebase
 from main.models import *
+from main import views as mainViews
 
 #firebase config
 config = settings.FIREBASE_CONFIG
@@ -18,22 +19,16 @@ firebase = pyrebase.initialize_app(config)
 #initializing firebase database
 db=firebase.database()
 
-#initializing firebase storage
-storage = firebase.storage()
-
 #validate class and section
 validateList = [['12','11','10','9','8','7','6','5','4','3','2','1'],['A','B','C','D','E','F','G','H','I','J','K']]
-
-def ignition(request):
-    return JsonResponse({'test':'run successful'}, status=200)
 
 def studentDashboard(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -49,10 +44,10 @@ def studentDashboard(request):
 def studentExamSubmit(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -83,10 +78,10 @@ def studentExamSubmit(request):
 def studentExamWarn(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -114,10 +109,10 @@ def studentExamWarn(request):
 def studentExamBlock(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -150,10 +145,10 @@ def studentExamBlock(request):
 def studentExamAttendee(request):
      #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'student':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
