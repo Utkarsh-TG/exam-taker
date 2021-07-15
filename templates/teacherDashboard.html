@@ -265,7 +265,7 @@
             loadWindow('mid', 1000)
             $.ajax({
                 type: 'POST',
-                url: '/teacher/exam/request/',
+                url: '/teacher/exam_request/',
                 data:{
                     class: currentClass,
                     csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
