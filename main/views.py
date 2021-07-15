@@ -95,9 +95,8 @@ def logout(request):
 
     return redirect(login)
 
-def teacherLogin(request):
-    #and request.POST.get('') == 'teacher'
-    if request.method == 'POST':
+def userLogin(request):
+    if request.method == 'POST' and request.POST.get('login-for') == 'teacher':
         teacherUsername = request.POST.get('teacher-username')
         teacherPassword = request.POST.get('teacher-password')
 
@@ -125,15 +124,11 @@ def teacherLogin(request):
                     #return password error
                     response = render(request, 'login.html', {'error':'Login Failed! Invalid Password', 'error-display':'flex'})
                     return response
-
-    return redirect(login)
-
-def studentLogin(request):
-    if request.method == 'POST':
+    elif request.method == 'POST' and request.POST.get('login-for') == 'student':
         studentUsername = request.POST.get('student-username')
         studentPassword = request.POST.get('student-password')
         studentClass = request.POST.get('student-class')
-        studentSection = request.POST.get('student-section')
+        studentSection = (request.POST.get('student-section')).upper()
         
         #validate class & section
         if studentClass not in validateList[0]:
@@ -169,3 +164,29 @@ def studentLogin(request):
                 return render(request, 'login.html', {'error':'Login Failed! Invalid Details', 'error-display':'flex'})
         
     return redirect(login)
+
+def examChatMessage(request):
+    #return if not logged in as teacher
+    if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+
+    #request userid
+    if 'uid' in request.COOKIES:
+        currentUser = request.COOKIES.get('uid')
+
+    if request.method == 'POST':
+        message = request.POST['message']
+        assignment = request.POST['assignment']
+        section = request.POST['section']
+        time = request.POST['time']
+        _class = request.POST['class']
+
+        if section not in validateList[1]:
+            return HttpResponse('')
+
+        chatData = {'name':currentUser, 'message':message}
+
+        #ref database/assignment/section/time
+        db.child('Chat').child(_class).child(assignment).child(section).child(time).set(chatData)
+
+        return HttpResponse('')
