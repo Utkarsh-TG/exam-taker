@@ -3,8 +3,8 @@ from student import views
 
 urlpatterns = [
     path('dashboard/', views.studentDashboard),
-    path('exam/submit/', views.studentExamSubmit),
-    path('exam/block/', views.studentExamBlock),
-    path('exam/warn/', views.studentExamWarn),
-    path('exam/attendee/', views.studentExamAttendee),
+    path('exam_submit/', views.studentExamSubmit),
+    path('exam_block/', views.studentExamBlock),
+    path('exam_warn/', views.studentExamWarn),
+    path('exam_attendee/', views.studentExamAttendee),
 ]
