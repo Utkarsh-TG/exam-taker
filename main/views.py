@@ -94,6 +94,7 @@ def logout(request):
     return redirect(login)
 
 def teacherLogin(request):
+    #and request.POST.get('') == 'teacher'
     if request.method == 'POST':
         teacherUsername = request.POST.get('teacher-username')
         teacherPassword = request.POST.get('teacher-password')
@@ -637,4 +638,31 @@ def teacherExamResult(request):
 
         return JsonResponse({'resultData':data})
     
+    return redirect(teacherDashboard)
+
+def teacherExamResultReturn(request):
+    #return if not logged in as student
+    if 'loggedIn' not in request.COOKIES:
+        return redirect(login)
+    if 'loggedIn' in request.COOKIES:
+        if request.COOKIES.get('loggedIn') != 'teacher':
+            return redirect(login)
+
+    if request.method == 'POST':
+        _class = request.POST['_class']
+        _section = request.POST['section']
+        _title = request.POST['title']
+        _id = request.POST['id']
+        _marks = request.POST['marks']
+        _desc = request.POST['note']
+
+        if _class not in validateList[0] or _section not in validateList[1]:
+            return HttpResponse('')
+        
+        data = {'class':_class, 'section':_section, 'title':_title, 'id':_id, 'marks':_marks, 'note':_desc}
+
+        db.child('Returns').child(_class).child(_title).child(_section).child(_id).set(data)
+
+        return HttpResponse('')
+
     return redirect(teacherDashboard)

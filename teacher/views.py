@@ -9,6 +9,7 @@ from django.template import RequestContext
 from django.conf import settings
 import pyrebase
 from main.models import *
+from main import views as mainViews
 
 #firebase config
 config = settings.FIREBASE_CONFIG
@@ -17,36 +18,30 @@ firebase = pyrebase.initialize_app(config)
 #initializing firebase database
 db=firebase.database()
 
-#initializing firebase storage
-storage = firebase.storage()
-
 #validate class and section
 validateList = [['12','11','10','9','8','7','6','5','4','3','2','1'],['A','B','C','D','E','F','G','H','I','J','K']]
-
-def ignition(request):
-    return JsonResponse({'test':'run successful'}, status=200)
 
 def teacherDashboard(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
         return render(request, 'teacherDashboard.html', {'username':currentUser, 'FIREBASE_CONFIG':dumps(config)})
     
-    return redirect(login)
+    return redirect(mainViews.login)
 
 def examCreate(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -75,10 +70,10 @@ def examCreate(request):
 def examUpdate(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -108,10 +103,10 @@ def examUpdate(request):
 def examUpdateFile(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -141,10 +136,10 @@ def examUpdateFile(request):
 def teacherExamRequest(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -170,10 +165,10 @@ def teacherExamRequest(request):
 def teacherExamStart(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -200,10 +195,10 @@ def teacherExamStart(request):
 def teacherExamEnd(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     #request userid
     if 'uid' in request.COOKIES:
         currentUser = request.COOKIES.get('uid')
@@ -235,10 +230,10 @@ def teacherExamEnd(request):
 def examBlockStudent(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     
     if request.method == 'POST':
         username = request.POST['user']
@@ -266,10 +261,10 @@ def examBlockStudent(request):
 def examUnblockStudent(request):
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
-        return redirect(login)
+        return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
         if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(login)
+            return redirect(mainViews.login)
     
     if request.method == 'POST':
         username = request.POST['user']
@@ -292,5 +287,53 @@ def examUnblockStudent(request):
         db.child('Warnings').child(_class).child(assignmentName).child(_section).child(time).set(unbanData)
 
         return HttpResponse('')
+
+    return redirect(teacherDashboard)
+
+def teacherExamResult(request):
+    #return if not logged in as student
+    if 'loggedIn' not in request.COOKIES:
+        return redirect(mainViews.login)
+    if 'loggedIn' in request.COOKIES:
+        if request.COOKIES.get('loggedIn') != 'teacher':
+            return redirect(mainViews.login)
+    #request userid
+    if 'uid' in request.COOKIES:
+        currentUser = request.COOKIES.get('uid')
+    
+    if request.method == 'POST':
+        _class = request.POST['class']
+        _title = request.POST['assignment']
+
+        if _class not in validateList[0]:
+            return HttpResponse('')
+
+        data = db.child('Answers').child(_class).child(_title).get().val()
+
+        return JsonResponse({'resultData':data})
+    
+    return redirect(teacherDashboard)
+
+def teacherExamResultReturn(request):
+    #return if not logged in as student
+    if 'loggedIn' not in request.COOKIES:
+        return redirect(mainViews.login)
+    if 'loggedIn' in request.COOKIES:
+        if request.COOKIES.get('loggedIn') != 'teacher':
+            return redirect(mainViews.login)
+
+    if request.method == 'POST':
+        _class = request.POST['_class']
+        _section = request.POST['section']
+        _title = request.POST['title']
+        _id = request.POST['id']
+
+        if _class not in validateList[0] or _section not in validateList[1]:
+            return HttpResponse('')
+        
+        print(_class)
+        print(_section)
+        print(_title)
+        print(_id)
 
     return redirect(teacherDashboard)
