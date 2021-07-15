@@ -108,3 +108,6 @@ GitHub.sublime-settings
 
 # api config
 *config.json
+
+#static
+*staticfiles/
