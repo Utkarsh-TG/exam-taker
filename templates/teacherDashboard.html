@@ -132,6 +132,12 @@
                         </div>
                         <div id="student-answers"></div>
                         <iframe src="" frameborder="0" id="student-file"></iframe>
+                        <div class="results-upload-container">
+                            {% csrf_token %}
+                            <input type="text" id="marks-input" placeholder="Marks" required>
+                            <textarea name="results-note" id="results-note-input" placeholder="Notes for student"></textarea>
+                            <button type="submit" id="results-submit">Submit</button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 //update
-var updated_file, updated_file_URL, results_data, c_section
+var updated_file, updated_file_URL, results_data, c_section, _title, _id
 var fileChange = false;
 var oldFile, oldTitle;
 
@@ -19,7 +19,25 @@ function openTask(title, time, desc, fileURL){
     oldFile = fileURL;
 }
 
+//results
+$('#results-submit').on('click', ()=>{
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/exam/results/return/',
+        data: {
+            _class: currentClass,
+            section: c_section,
+            title: _title,
+            id: _id,
+            marks: $('#marks-input').val(),
+            note: $('#results-note-input').val(),
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+        }
+    })
+})
+
 const openStudentResult = (id) => {
+    _id = id
     loadWindow('mid', 1000)
     $('.students-result-wrapper').css({'display':'block'})
     $('.section-wrapper').css({'display':'none'})
@@ -147,6 +165,7 @@ function postTask(task, title, time, desc, fileURL, date){
             success: function(data){
                 let tempData = data.resultData;
                 results_data = tempData
+                _title = title
                 generateResults(tempData)
             },
         });
