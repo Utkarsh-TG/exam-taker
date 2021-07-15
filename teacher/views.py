@@ -327,13 +327,17 @@ def teacherExamResultReturn(request):
         _section = request.POST['section']
         _title = request.POST['title']
         _id = request.POST['id']
+        _marks = request.POST['marks']
+        _desc = request.POST['note']
+        _date = request.POST['date']
 
         if _class not in validateList[0] or _section not in validateList[1]:
             return HttpResponse('')
-        
-        print(_class)
-        print(_section)
-        print(_title)
-        print(_id)
+
+        data = {'class':_class, 'section':_section, 'title':_title, 'id':_id, 'marks':_marks, 'note':_desc, 'date':_date}
+
+        db.child('Returns').child(_class).child(_section).child(_id).child(_title).set(data)
+
+        return HttpResponse('')
 
     return redirect(teacherDashboard)
