@@ -17,7 +17,7 @@
                 <div class="form-option" id="teacher-login-form-btn">Teacher Login</div>
             </div>
             <div class="student-login-form-wrapper form-wrapper" id="student-login-form-wrapper">
-                <form id="student-login-form" class="login-form" method="POST" action="/student/login/">
+                <form id="student-login-form" class="login-form" method="POST" action="/user/login/student/">
                     {% csrf_token %}
                     <input type="text" placeholder="Enter Username" id="student-login-username" class="form-input" name="student-username" required>
                     <input type="password" placeholder="Enter Password" id="student-login-password" class="form-input" name="student-password" required>
@@ -29,7 +29,7 @@
                 </form>
             </div>
             <div class="teacher-login-form-wrapper form-wrapper" id="teacher-login-form-wrapper">
-                <form id="teacher-login-form" class="login-form" method="POST" action="/teacher/login/">
+                <form id="teacher-login-form" class="login-form" method="POST" action="/user/login/teacher/">
                     {% csrf_token %}
                     <input type="text" placeholder="Enter Username" id="teacher-login-username" class="form-input" name="teacher-username" required>
                     <input type="password" placeholder="Enter Password" id="teacher-login-password" class="form-input" name="teacher-password" required>
