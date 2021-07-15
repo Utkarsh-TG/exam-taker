@@ -417,6 +417,13 @@ ul#rules-list li{
 .responsive-break{
     display: none;
 }
+.returned-assignments-container{
+    width: 100%;
+    height: 100%;
+    display: none;
+    background: #f2f2f2;
+    overflow-y: auto;
+}
 @keyframes blinkWarning{
     0%{
         background: #f80000;

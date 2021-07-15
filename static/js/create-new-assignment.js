@@ -37,7 +37,7 @@ function test(){
     _class = currentClass
     $.ajax({
         type: 'POST',
-        url: '/teacher/exam/create/',
+        url: '/teacher/exam_create/',
         data:{
             class: _class,
             title: $('#assignment-title-input').val(),
