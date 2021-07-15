@@ -23,10 +23,15 @@
         <div class="assignments-container">
             <div class="assignment-search-wrapper">
                 <input type="text" id="search-assignments" placeholder="Search..">
+                <button id="show-returned" onclick="showReturenedAssignments()"></button>
             </div>
             <div id="assignments-container"></div>
         </div>
+        <div class="returned-assignments-container">
+            <div id="returned-assignments-wrapper">
 
+            </div>            
+        </div>
         <div class="assignment-window" id="assignment-window">
             <div class="warning-display"><span id="warning-msg"></span></div>
             <div id="lava-zone"></div>
@@ -171,6 +176,26 @@
         }
 
         getAssignmentsUpdate()
+
+        const generateReturns = (data) => {
+            let _data = []
+            if(data){
+                Object.entries(data).forEach(
+                    ([key, value]) => _data.push(value)
+                );
+            }
+            for(let i=0; i<_data.length;i++){
+                wr
+            }
+        }
+
+        const showReturenedAssignments = () => {
+            let ref = database.ref('Returns').child(userClass)
+            ref.on('value', (dataSnapshot) => {
+                let returnsData = dataSnapshot.val()
+                generateReturns(returnsData)
+            })
+        }
 
         $('#search-assignments').on("keyup", () => {
             inputVal = document.getElementById('search-assignments').value.toUpperCase();
