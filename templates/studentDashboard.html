@@ -23,11 +23,12 @@
         <div class="assignments-container">
             <div class="assignment-search-wrapper">
                 <input type="text" id="search-assignments" placeholder="Search..">
-                <button id="show-returned" onclick="showReturenedAssignments()"></button>
+                <button id="show-returned" onclick="showReturenedAssignments()">Returns</button>
             </div>
             <div id="assignments-container"></div>
         </div>
         <div class="returned-assignments-container">
+            <button id="back-returns" onclick="hideReturnedAssignments()">BACK</button>
             <div id="returned-assignments-wrapper">
 
             </div>            
@@ -86,6 +87,7 @@
                 <div class="upload-file-container">
                     <input type="file" id="answer-file" accept="application/pdf">
                     <div class="upload-file-btn" id="upload-file">Upload</div>
+                    <span id="input-file-name"></span>
                 </div>
                 <div class="final-submit-btn" id="final-submit-btn">Submit</div>
             </div>
@@ -100,10 +102,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
     <script>
+        $('#answer-file').on('change', () => {
+            $('#input-file-name').html($('#answer-file').val().split(/(\\|\/)/g).pop())
+        })
+
         username = "{{ username }}"
         userClass = "{{ class }}"
         userSection = "{{ section }}"
         var attendeeList, attendees;
+        var _preventCheat = false; //make it true
 
         $('.error-message').css({'display':'{{ error_display }}'});
 
@@ -177,20 +184,31 @@
 
         getAssignmentsUpdate()
 
+        const hideReturnedAssignments = () => {
+            $('.assignments-container').css({'display':'block'})
+            $('.returned-assignments-container').css({'display':'none'})
+        }
+
         const generateReturns = (data) => {
             let _data = []
+            $('.assignments-container').css({'display':'none'})
+            $('.returned-assignments-container').css({'display':'block'})
+            parent = document.getElementById('returned-assignments-wrapper')
             if(data){
                 Object.entries(data).forEach(
                     ([key, value]) => _data.push(value)
                 );
             }
             for(let i=0; i<_data.length;i++){
-                wr
+                let wrapper = document.createElement('div')
+                wrapper.classList.add('returned-assignment')
+                wrapper.innerHTML = '<div class="return-assignment-info"><span class="returned-assignment-name">'+ _data[i]['title'] +'</span> <span class="returned-assignment-date">'+ _data[i]['date'] +'</span> </div><div class="return-assignment-result"><span class="return-assignment-marks">'+ _data[i]['marks'] +'</span> <span class="return-assignment-note">'+ _data[i]['note'] +'</span></div>'
+                parent.appendChild(wrapper)
             }
         }
 
         const showReturenedAssignments = () => {
-            let ref = database.ref('Returns').child(userClass)
+            let ref = database.ref('Returns').child(userClass).child(userSection).child(username)
             ref.on('value', (dataSnapshot) => {
                 let returnsData = dataSnapshot.val()
                 generateReturns(returnsData)
@@ -273,7 +291,7 @@
                         _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
                         $.ajax({
                             type: 'POST',
-                            url: '/student/exam/submit/',
+                            url: '/student/exam_submit/',
                             data:{
                                 user: username,
                                 class: userClass,
@@ -362,7 +380,6 @@
         }
 
         const preventCheat = () => {
-            _preventCheat = true //make it true
             if(_preventCheat){
                 document.addEventListener('fullscreenchange', (e) => {
                     e.preventDefault()
@@ -406,7 +423,7 @@
                 _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
                 $.ajax({
                     type: 'POST',
-                    url: '/student/exam/warn/',
+                    url: '/student/exam_warn/',
                     data:{
                         user: username,
                         assignment: assignmentTitle,
@@ -426,7 +443,7 @@
                 _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
                 $.ajax({
                     type: 'POST',
-                    url: '/student/exam/block/',
+                    url: '/student/exam_block/',
                     data:{
                         user: username,
                         assignment: assignmentTitle,
@@ -470,7 +487,7 @@
                     _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
                     $.ajax({
                         type: 'POST',
-                        url: '/student/exam/attendee/',
+                        url: '/student/exam_attendee/',
                         data:{
                             user: username,
                             class: userClass,
@@ -530,34 +547,36 @@
             openAssignment(target.textContent)
         }
         
-        window.oncontextmenu = function () {
-            return false;
-        }
+        //cheat prevention
+        if(_preventCheat){
+            window.oncontextmenu = function () {
+                return false;
+            }
 
-        $(document).ready(function(){
-            $('body').bind('cut copy paste', (e) => {
-                e.preventDefault();
+            $(document).ready(function(){
+                $('body').bind('cut copy paste', (e) => {
+                    e.preventDefault();
+                });
             });
-        });
 
-        $(document).ready(function(){  
-            $("body").bind("contextmenu", function(e) {  
-                return false;  
-            });  
-        }); 
+            $(document).ready(function(){  
+                $("body").bind("contextmenu", function(e) {  
+                    return false;  
+                });  
+            }); 
 
-        $(document).keydown(function (event) {
-            if (event.keyCode == 123) {
-                return false;
-            }
-            if (event.ctrlKey && (event.keyCode === 85 || event.keyCode === 83 || event.keyCode ===65 )){
-                return false;
-            }
-            else if (event.ctrlKey && event.shiftKey && event.keyCode === 73){
-                return false;
-            }
-        });
-
+            $(document).keydown(function (event) {
+                if (event.keyCode == 123) {
+                    return false;
+                }
+                if (event.ctrlKey && (event.keyCode === 85 || event.keyCode === 83 || event.keyCode ===65 )){
+                    return false;
+                }
+                else if (event.ctrlKey && event.shiftKey && event.keyCode === 73){
+                    return false;
+                }
+            });
+        }
 
         //chat
         var chatData, old_chat_data
@@ -630,7 +649,7 @@
             if(!_message.trim() == ''){
                 $.ajax({
                     type: 'POST',
-                    url: '/exam/chat/message/',
+                    url: '/chat_message/',
                     data:{
                         user: _user,
                         message: _message,
@@ -686,7 +705,7 @@
                 _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
                 $.ajax({
                     type: 'POST',
-                    url: '/student/exam/submit/',
+                    url: '/student/exam_submit/',
                     data:{
                         user: username,
                         class: userClass,
