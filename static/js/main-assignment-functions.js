@@ -21,9 +21,10 @@ function openTask(title, time, desc, fileURL){
 
 //results
 $('#results-submit').on('click', ()=>{
+    today = new Date().toISOString().slice(0, 10);
     $.ajax({
         type: 'POST',
-        url: '/teacher/exam/results/return/',
+        url: '/teacher/exam_results_return/',
         data: {
             _class: currentClass,
             section: c_section,
@@ -31,7 +32,13 @@ $('#results-submit').on('click', ()=>{
             id: _id,
             marks: $('#marks-input').val(),
             note: $('#results-note-input').val(),
+            date: today,
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+        },success: () => {
+            $('.error-message').css({'display':'flex'})
+            $('#error-msg').html('Result posted successfully!')
+            $('#marks-input').val('')
+            $('#results-note-input').val('')
         }
     })
 })
@@ -118,7 +125,7 @@ function postTask(task, title, time, desc, fileURL, date){
         _class = currentClass
         $.ajax({
             type: 'POST',
-            url: '/teacher/exam/assign/',
+            url: '/teacher/exam_assign/',
             data:{
                 class: _class,
                 title: title,
@@ -137,7 +144,7 @@ function postTask(task, title, time, desc, fileURL, date){
         _class = currentClass
         $.ajax({
             type: 'POST',
-            url: '/teacher/exam/end/',
+            url: '/teacher/exam_end/',
             data:{
                 class: _class,
                 title: title,
@@ -156,7 +163,7 @@ function postTask(task, title, time, desc, fileURL, date){
         _class = currentClass
         $.ajax({
             type: 'POST',
-            url: '/teacher/exam/result/',
+            url: '/teacher/exam_result/',
             data:{
                 class: _class,
                 assignment: title,
@@ -257,7 +264,7 @@ function postUpdatedAssignmentForm(){
     today = new Date().toISOString().slice(0, 10);
     $.ajax({
         type: 'POST',
-        url: '/teacher/exam/update/file',
+        url: '/teacher/exam_update_file',
         data:{
             class: _class,
             old_title: oldTitle,
@@ -302,7 +309,7 @@ $(document).on('submit', '#update-assignment', function(e){
         today = new Date().toISOString().slice(0, 10);
         $.ajax({
             type: 'POST',
-            url: '/teacher/exam/update/file',
+            url: '/teacher/exam_update_file',
             data:{
                 class: _class,
                 old_title: oldTitle,

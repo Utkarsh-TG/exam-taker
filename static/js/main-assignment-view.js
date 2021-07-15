@@ -221,7 +221,7 @@ function blockUser(){
     _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
     $.ajax({
         type: 'POST',
-        url: '/exam/student/block/',
+        url: '/teacher/exam/student_block/',
         data:{
             user: $('#warning-input').val(),
             class: _class,
@@ -243,7 +243,7 @@ function unBlockUser(){
     _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
     $.ajax({
         type: 'POST',
-        url: '/exam/student/unblock/',
+        url: '/teacher/exam_student_unblock/',
         data:{
             user: $('#warning-input').val(),
             class: _class,
@@ -268,7 +268,7 @@ function submitChatMessage(){
     if(!_message.trim() == ''){
         $.ajax({
             type: 'POST',
-            url: '/exam/chat/message/',
+            url: '/chat_message/',
             data:{
                 user: _user,
                 message: _message,
