@@ -176,18 +176,20 @@ def teacherExamStart(request):
     if request.method == 'POST':
         currentClass = request.POST['class']
         title = request.POST['title']
-        time = request.POST['time']
-        description = request.POST['description']
-        file_URL = request.POST.get('fileURL')
-        date = request.POST['date']
+        section = request.POST['section']
+        time = request.POST['date']
+
+        sectionList = section.split (",")
 
         if len(title) < 1 or currentClass not in validateList[0]:
             return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Invalid Details!','error-display':'flex'})
 
-        assignmentData = {'title':title, 'time':time, 'description':description, 'file':file_URL, 'date':date, 'assigned':'true', 'ended':'false'}
+        assignmentData = {'assigned':True, 'ended':False, 'title':title, 'sections':section, 'class':currentClass, 'time':time}
 
         #ref database/Assignments/class/title
-        db.child("Assignments").child(currentClass).child(title).update(assignmentData)
+        for i in range(0,len(sectionList)):
+            db.child("Assigned").child(currentClass).child(sectionList[i]).child(title).update(assignmentData)
+
         return HttpResponse('')
 
     return redirect(teacherDashboard)
@@ -206,18 +208,18 @@ def teacherExamEnd(request):
     if request.method == 'POST':
         currentClass = request.POST['class']
         title = request.POST['title']
-        time = request.POST['time']
-        description = request.POST['description']
-        file_URL = request.POST.get('fileURL')
-        date = request.POST['date']
+        section = request.POST['section']
+
+        sectionList = section.split (",")
 
         if len(title) < 1 or currentClass not in validateList[0]:
-            return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Invalid Details!','error-display':'flex'})
-
-        assignmentData = {'title':title, 'time':time, 'description':description, 'file':file_URL, 'date':date, 'assigned':'true', 'ended':'true'}
+            return HttpResponse('')
+        
+        assignmentData = {'assigned':True, 'ended':True, 'title':title, 'sections':section, 'class':currentClass, 'time':time}
 
         #ref database/Assignments/class/title
-        db.child("Assignments").child(currentClass).child(title).update(assignmentData)
+        for i in range(0,len(sectionList)):
+            db.child("Assigned").child(currentClass).child(sectionList[i]).child(title).update(assignmentData)
 
         db.child('Chat').child(currentClass).child(title).remove()
         db.child('TurnedIn').child(currentClass).child(title).remove()
