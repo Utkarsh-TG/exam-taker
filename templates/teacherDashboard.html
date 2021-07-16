@@ -353,9 +353,6 @@
                 assignmentWrap.classList.add('assignment-wrapper')
                 parent.appendChild(assignmentWrap)
                 assignmentWrap.innerHTML = '<div class="assignment-title open-view-assignment" onclick="viewAssignment(this)"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assign-task assignment-function-btn">Assign</div><div class="update-task assignment-function-btn">Update</div><div class="view-results assignment-function-btn">Results</div><div class="end-task assignment-function-btn">End</div></div>'
-                if(i == data.length-1){
-                    reAssignUpdateButton();
-                }
             }
         }
 
