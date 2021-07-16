@@ -41,6 +41,26 @@ def studentDashboard(request):
 
     return render(request, 'studentDashboard.html', {'username':currentUser, 'class':currentClass, 'section':currentSection, 'FIREBASE_CONFIG':dumps(config)})
 
+def studentGetExam(request):
+    if 'loggedIn' not in request.COOKIES:
+        return redirect(mainViews.login)
+    if 'loggedIn' in request.COOKIES:
+        if request.COOKIES.get('loggedIn') != 'student':
+            return redirect(mainViews.login)
+    #request userid
+    if 'uid' in request.COOKIES:
+        currentUser = request.COOKIES.get('uid')
+    
+    if  request.method == 'POST':
+        _class = request.POST['class']
+        title = request.POST['title']
+
+        data = db.child('Assignments').child(_class).child(title).get().val()
+
+        return JsonResponse({'assignmentData':data})
+
+    return redirect(studentDashboard)
+    
 def studentExamSubmit(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
