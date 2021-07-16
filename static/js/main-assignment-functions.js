@@ -225,7 +225,7 @@ function postUpdatedAssignmentForm(){
     today = new Date().toISOString().slice(0, 10);
     $.ajax({
         type: 'POST',
-        url: '/teacher/exam_update_file',
+        url: '/teacher/exam_update_file/',
         data:{
             class: _class,
             old_title: oldTitle,
@@ -253,7 +253,7 @@ $(document).on('submit', '#update-assignment', function(e){
         newStorageRef = storage.ref('Assignments').child(currentClass).child($('#update-title-input').val())
         // uploading file this storage ref
         updated_file = document.getElementById("update-file-input").files[0];
-        thisref = storageref.child(updated_file.name).put(updated_file);
+        thisref = newStorageRef.child(updated_file.name).put(updated_file);
         thisref.on('state_changed',function(snapshot) {
                 console.log('Done');
             }, function(error) {
@@ -270,7 +270,7 @@ $(document).on('submit', '#update-assignment', function(e){
         today = new Date().toISOString().slice(0, 10);
         $.ajax({
             type: 'POST',
-            url: '/teacher/exam_update_file',
+            url: '/teacher/exam_update_file/',
             data:{
                 class: _class,
                 old_title: oldTitle,

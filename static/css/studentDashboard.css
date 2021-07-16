@@ -48,6 +48,7 @@ body{
     display: flex;
     flex-direction: column;
     height: 100vh;
+    background: #f2f2f2;
 }
 .nav-wrapper{
     display: flex;
@@ -531,6 +532,7 @@ ul#rules-list li{
     }
     .chat-container {
         min-height: 250px;
+        max-height: 250px;
     }
     .time-ticker{
         float: left;
