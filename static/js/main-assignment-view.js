@@ -122,6 +122,7 @@ function generateAssignmentWarning(){
             }
         }
     }
+    $("#warning-log").scrollTop($("#warning-log")[0].scrollHeight);
 }
 
 function generateWarningUI(){
@@ -173,6 +174,7 @@ function generateAssignmentAttendee(){
             parent.appendChild(attendeePost)
         }
     }
+    $("#attendee-log").scrollTop($("#attendee-log")[0].scrollHeight);
 }
 
 function generateAttendeesUI(){
