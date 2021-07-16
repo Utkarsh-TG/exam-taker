@@ -8,17 +8,111 @@
     <title>Signup</title>
 </head>
 <body>
+    {% include 'loading.html' %}
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        input,input:active,input:focus{
+            border: none;
+            outline: none;
+        }
+        .container{
+            width: 100vw;
+            height: 100vh;
+            background: rgb(136, 212, 139);
+        }
+        .signup-form-wrapper{
+            background: #f2f2f2;
+            position: absolute;
+            min-width: 500px;
+            width: 40%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-height: 450px;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: -2px 2px 2px 0.5px rgba(0, 0, 0, 0.2);
+        }
+        .form-input{
+            display: block;
+            padding: 15px 7px;
+            width: 70%;
+            margin: 15px 0px;
+            margin-bottom: 30px !important;
+            font-size: 1em;
+            box-shadow: -2px 2px 2px 0.5px rgba(0, 0, 0, 0.2);
+        }
+        #form-submit{
+            display: block;
+            padding: 15px 7px;
+            width: 70%;
+            margin: 15px auto;
+            font-size: 1.1em;
+            box-shadow: -2px 2px 2px 0.5px rgba(0, 0, 0, 0.2);
+            background-color: rgb(107, 192, 110);
+            color: #f2f2f2;
+            cursor: pointer;
+        }
+        #form-submit:hover{
+            background: rgb(96, 177, 98);
+        }
+        #form-submit:disabled{
+            cursor: not-allowed;
+            background: rgb(136, 182, 137);
+            color: #000;
+        }
+        #signup-form{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        .form-head{
+            margin: 10px 0px;
+            cursor: pointer;
+            padding: 15px 20px;
+            font-size: 1.5em;
+            width: 100%;
+            font-family: 'PT Sans', sans-serif;
+            text-align: center;
+        }
+        @media screen and (max-width: 500px) {
+            .signup-form-wrapper{
+                min-width: 400px;
+            }    
+        }
+        @media screen and (max-width: 400px) {
+            #signup-form{
+                display: block;
+                padding: 0px 40px;
+            }
+            .signup-form-wrapper{
+                min-width: 100%;
+            }  
+            .form-input{
+                width: 100%;
+            }  
+        }
+    </style>
     <div class="container">
         <div class="signup-form-wrapper">
             <form id="signup-form" method="POST" action="/student_signup/">
+                <div class="form-head">
+                    Signup
+                </div>
                 {% csrf_token %}
-                <input type="text" id="input-id" name="uid" placeholder="ID" required>
-                <input type="text" id="input-name" name="name" placeholder="Full Name" required>
-                <input type="text" id="input-section" name="section" placeholder="Section" required>
-                <input type="password" id="input-pass" name="password" placeholder="Password" required>
+                <input type="text" class="form-input" id="input-id" name="uid" placeholder="ID" required>
+                <input type="text" class="form-input" id="input-name" name="name" placeholder="Full Name" required>
+                <input type="text" class="form-input" id="input-section" name="section" placeholder="Section" required>
+                <input type="password" class="form-input" id="input-pass" name="password" placeholder="Password" required>
                 <input type="submit" value="Signup" id="form-submit">
             </form>
         </div>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </body>
 </html>
