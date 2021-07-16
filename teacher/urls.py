@@ -9,8 +9,8 @@ urlpatterns = [
     path('exam_request/', views.teacherExamRequest),
     path('exam_assign/', views.teacherExamStart),
     path('exam_end/', views.teacherExamEnd),
-    path('student_block/', views.examBlockStudent),
-    path('student_unblock/', views.examUnblockStudent),
+    path('exam_student_block/', views.examBlockStudent),
+    path('exam_student_unblock/', views.examUnblockStudent),
     path('exam_result/', views.teacherExamResult),
     path('exam_results_return/', views.teacherExamResultReturn),
 ]
