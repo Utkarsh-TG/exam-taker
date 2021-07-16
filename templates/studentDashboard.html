@@ -283,7 +283,8 @@
         }
         
         const forceEndExam = (from) => {
-            let endTimeLeft = 300
+            _preventCheat = false
+            let endTimeLeft = 10
             const startEndExamTimer = setInterval(() => {
                 $('#final-clock-container').html(convertHMS(endTimeLeft))
                 endTimeLeft -= 1
@@ -340,7 +341,6 @@
                 $('.error-message').css({'display':'flex'})
                 $('#error-msg').html('Timeover, Upload and submit before auto submit!')
             }
-            _preventCheat = false
             $('.final-submit-window').css({'display':'flex'})
             $('.assignment-window').css({'display':'none'})
         }
@@ -419,7 +419,7 @@
         }
 
         const uploadStudentWarning = () => {
-            if(!blocked){
+            if(!blocked && _preventCheat){
                 //show warning
                 dateToday = new Date()
                 _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
@@ -439,7 +439,7 @@
         }
 
         const uploadStudentBlock = () => {
-            if(!blocked){
+            if(!blocked && _preventCheat){
                 //make block request
                 dateToday = new Date()
                 _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
@@ -530,6 +530,7 @@
                     for(let i = 0; i < attendees.length; i++){
                         if(attendees[i]['id'] == username){
                             alert('You already gave exam')
+                            return false
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
                             loadWindow('mid', 3000)
@@ -587,7 +588,7 @@
                 if (event.ctrlKey && (event.keyCode === 85 || event.keyCode === 83 || event.keyCode ===65 )){
                     return false;
                 }
-                else if (event.ctrlKey && event.shiftKey && event.keyCode === 73){
+                else if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74 || event.keyCode === 67)){
                     return false;
                 }
             });

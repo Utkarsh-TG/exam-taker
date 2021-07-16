@@ -46,7 +46,7 @@
             <div class="create-task-wrapper">
                 <div class="create-assignment-form-container">
                     <div class="return-back-btn" id="hide-new-assignment-form-btn">BACK</div>
-                    <form id="create-assignment">
+                    <div id="create-assignment">
                         {% csrf_token %}
                         <div class="title-time-wrapper">
                             <input type="text" name="assignment-title" id="assignment-title-input" required class="assignment-form-input" placeholder="Title" autocomplete="off">
@@ -57,7 +57,7 @@
                             <input type="file" name="files[]" id="assignment-file-input" accept="application/pdf">
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="assignment-form-submit">
-                    </form>
+                    </div>
                     <form id="update-assignment">
                         {% csrf_token %}
                         <div class="title-time-wrapper">
@@ -157,6 +157,9 @@
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script> 
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-storage.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{% static 'js/create-new-assignment.js' %}"></script>
+    <script src="{% static 'js/main-assignment-functions.js' %}"></script>
+    <script src="{% static 'js/main-assignment-view.js' %}"></script>
     <script>
         var sectionList = []
         var currentAssignment, assignmentFunction
@@ -353,6 +356,9 @@
                 assignmentWrap.classList.add('assignment-wrapper')
                 parent.appendChild(assignmentWrap)
                 assignmentWrap.innerHTML = '<div class="assignment-title open-view-assignment" onclick="viewAssignment(this)"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assign-task assignment-function-btn">Assign</div><div class="update-task assignment-function-btn">Update</div><div class="view-results assignment-function-btn">Results</div><div class="end-task assignment-function-btn">End</div></div>'
+                if(i == data.length-1){
+                    reAssignUpdateButton()
+                }
             }
         }
 
@@ -422,8 +428,5 @@
             }
         })
     </script>
-    <script src="{% static 'js/create-new-assignment.js' %}"></script>
-    <script src="{% static 'js/main-assignment-functions.js' %}"></script>
-    <script src="{% static 'js/main-assignment-view.js' %}"></script>
 </body>
 </html>
