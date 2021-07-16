@@ -221,7 +221,7 @@ function blockUser(){
     _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
     $.ajax({
         type: 'POST',
-        url: '/teacher/exam/student_block/',
+        url: '/teacher/exam_student_block/',
         data:{
             user: $('#warning-input').val(),
             class: _class,

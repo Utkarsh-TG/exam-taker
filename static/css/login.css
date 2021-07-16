@@ -100,3 +100,37 @@ input,input:active,input:focus{
     background: rgb(136, 182, 137);
     color: #000;
 }
+@media screen and (max-width: 500px) {
+    .login-forms-wrapper{
+        min-width: 400px;
+        max-width: 400px;
+    }
+    .login-form{
+        display: block;
+    }
+    .form-wrapper{
+        margin-top: 15%;
+    }
+    .class-input-fields{
+        justify-content: space-between;
+    }
+    .form-input-class{
+        margin: 15px 0px;
+        width: 40%;
+    }
+    .form-input{
+        width: 100%;
+    }
+}
+@media screen and (max-width: 400px) {
+    .login-forms-wrapper{
+        min-width: 100%;
+        max-width: 400%;
+    }
+    .form-input-class{
+        width: 100%;
+    }
+    .class-input-fields{
+        flex-direction: column;
+    }
+}
