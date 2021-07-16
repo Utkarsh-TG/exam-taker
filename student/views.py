@@ -78,7 +78,7 @@ def studentExamSubmit(request):
         _section = request.POST['section']
         _time = request.POST['time']
         _answers = request.POST['textanswer']
-        _file = request.POST['file']
+        _file = request.POST.get('file', False)
         _title = request.POST['title']
 
         if _class not in validateList[0] or _section not in validateList[1]:
