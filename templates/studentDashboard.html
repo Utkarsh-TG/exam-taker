@@ -284,7 +284,7 @@
         
         const forceEndExam = (from) => {
             _preventCheat = false
-            let endTimeLeft = 10
+            let endTimeLeft = 300
             const startEndExamTimer = setInterval(() => {
                 $('#final-clock-container').html(convertHMS(endTimeLeft))
                 endTimeLeft -= 1
