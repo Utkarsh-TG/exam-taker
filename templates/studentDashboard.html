@@ -196,6 +196,7 @@
             $('.assignments-container').css({'display':'none'})
             $('.returned-assignments-container').css({'display':'block'})
             parent = document.getElementById('returned-assignments-wrapper')
+            parent.innerHTML = ''
             if(data){
                 Object.entries(data).forEach(
                     ([key, value]) => _data.push(value)

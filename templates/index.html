@@ -8,14 +8,24 @@
     <title>Home</title>
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <script src="{% static 'js/app-main-home.js' %}"></script>
 </head>
 <body>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Pacifico&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=PT+Sans&display=swap');
         *{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        body{
+            background: rgb(24, 95, 9);
+            overflow-x: hidden;
+        }
+        html{
+            scroll-behavior: smooth;
         }
         a, a:active{
             color: inherit;
@@ -25,8 +35,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgb(24, 95, 9);
-            color: #f2f2f2;
+            background: #f2f2f2;
+            color: rgb(24, 95, 9);
             padding: 10px 20px;
         }
         .btn{
@@ -35,26 +45,130 @@
             margin: 0px 5px;
         }
         .btn:hover{
-            background: #f2f2f2;
-            color: rgb(24, 95, 9);
+            background: rgb(24, 95, 9);
+            color: #f2f2f2;
         }
         .function-btns{
             display: flex;
             align-items: center;
         }
+        .redirect-btns{
+            border-left: 2px solid rgb(24, 95, 9);
+            display: flex;
+        }
+        .logo-wrap{
+            display: flex;
+            align-items: center;
+        }
+        #logo-heading{
+            margin-left: 10px;
+            font-size: 1.1em;
+        }
+        .page-tour{
+            display: flex;
+            justify-content: space-between;
+            margin: 100px 60px;
+            align-items: center;
+        }
+        .page-tour img{
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px 1px #000;
+        }
+        .teaecher-page-tour{
+            flex-direction: row-reverse;
+        }
+        .page-desc{
+            max-width: 50%;
+            color: #f2f2f2;
+            font-size: 1.3em;
+            font-family: 'PT Sans', sans-serif;
+        }
+        #features{
+            max-width: 80%;
+            min-width: 80%;
+            margin: 200px auto;
+        }
+        .feature-block{
+            display: inline-block;
+            padding: 10px 15px;
+            font-size: 1.3em;
+            font-family: 'PT Sans', sans-serif;
+            background: #f2f2f2;
+            color: rgb(24, 95, 9);
+            box-shadow: 0px 0px 10px 0px #000;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px;
+        }
     </style>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <div class="navbar" id="navbar">
         <div class="logo-wrap">
-            <img src="{% static 'images/logo.png' %}" alt="" srcset="" width="50px">
+            <img src="{% static 'images/logo.png' %}" alt="" srcset="" width="30px">
+            <span id="logo-heading">Exam Taker</span>
         </div>
         <div class="function-btns">
-            <div class="btn signup_btn" id="login">
-                <a href="/signup/">Signup</a>
+            <div class="btn tour-btn">
+                <a href="#tour">Tour</a>
             </div>
-            <div class="btn login_btn" id="login">
-                <a href="/login/">Login</a>
+            <div class="btn features-btn">
+                <a href="#features">Features</a>
+            </div>
+            <div class="btn how-to-btn">
+                <a href="#how-to">How to use</a>
+            </div>
+            <div class="redirect-btns">
+                <div class="btn signup_btn" id="login">
+                    <a href="/signup/">Signup</a>
+                </div>
+                <div class="btn login_btn" id="login">
+                    <a href="/login/">Login</a>
+                </div>
             </div>
         </div>
     </div>
+    <div class="container">
+        <div id="tour">
+            <div class="login-page-tour page-tour">
+                <img src="{% static 'images/login.png' %}" alt="login.png" width="500px" data-aos="fade-right">
+                <div class="page-desc" data-aos="fade-left">
+                    Authentication system before accessing various funtions of the dashbaord.
+                </div>
+            </div>
+            <div class="teaecher-page-tour page-tour">
+                <img src="{% static 'images/teacherDashboard.png' %}" alt="teacherDashboard.png" width="500px" data-aos="fade-left">
+                <div class="page-desc" data-aos="fade-right">
+                    Teacher dashboard to control assignments. Create, Update, Assign or End examinations at one place. Monitor students and return results with easy to use user interface.
+                </div>
+            </div>
+            <div class="student-page-tour page-tour">
+                <img src="{% static 'images/studentDashboard.png' %}" alt="studentDashboard.png" width="500px" data-aos="fade-right">
+                <div class="page-desc" data-aos="fade-left">
+                    Student dashboard to attempt all the assigned exams and view results. In built solutions to prevent cheating.
+                </div>
+            </div>
+        </div>
+        <div id="features">
+           
+        </div>
+        <div id="how-to"></div>
+    </div>
+    <script>
+        const loadFeatures = () => {
+            let features = ['Create new assignments','Update assignments','Assign assignments to section','Monitor students during examination','End assignments for section','View answers','Grade students, give note','Prevent cheating', 'In-built chat and warning system']
+            let parent = document.getElementById('features')
+            for(let i=0;i<features.length;i++){
+                let block = document.createElement('div')
+                block.classList.add('feature-block')
+                block.setAttribute('data-aos','zoom-in')
+                block.innerHTML = '<div class="feature-desc">'+features[i]+'</div>'
+                parent.appendChild(block)
+            }
+        }
+        loadFeatures()
+        AOS.init({
+            duration: 1000,
+        })
+    </script>
 </body>
 </html>
