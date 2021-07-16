@@ -126,34 +126,34 @@
         var storage = firebase.storage();
          
         //generate assignments UI
-        const generateAssignmentList = () => {
+        const generateAssignmentList = (data) => {
             let parent = document.getElementById('assignments-container')
             parent.innerHTML = ''
             let assignmentData = []
-            if(assignment_data){
-                Object.entries(assignment_data).forEach(
+            if(data){
+                Object.entries(data).forEach(
                     ([key, value]) => assignmentData.push(value)
                 );
             }
             for(let i = 0; i < assignmentData.length; i++){
-                if(assignmentData[i]['assigned'] == 'true' && assignmentData[i]['ended'] == 'false'){
+                if(assignmentData[i]['assigned'] && !assignmentData[i]['ended']){
                     assignment = document.createElement('div')
                     assignment.classList.add('assignment-wrapper','available-assignment')
-                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['date'] +'</span></div><div class="assignment-functions"><div class="assignment-assigned assignment-function-btn">Assigned</div><div class="assignment-not-ended assignment-function-btn">Not Ended</div><div class="assignment-start assignment-function-btn" onclick="startTest(this)">Take Test</div></div>'
+                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['time'] +'</span></div><div class="assignment-functions"><div class="assignment-assigned assignment-function-btn">Assigned</div><div class="assignment-not-ended assignment-function-btn">Not Ended</div><div class="assignment-start assignment-function-btn" onclick="startTest(this)">Take Test</div></div>'
                     parent.insertBefore(assignment, parent.children[0]);
                 }
-                else if(assignmentData[i]['assigned'] == 'true' && assignmentData[i]['ended'] == 'true'){
+                else if(assignmentData[i]['assigned'] && assignmentData[i]['ended']){
                     assignment = document.createElement('div')
                     assignment.classList.add('assignment-wrapper','ended-assignment')
-                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['date'] +'</span></div><div class="assignment-functions"><div class="assignment-assigned assignment-function-btn">Assigned</div><div class="assignment-ended assignment-function-btn">Ended</div><div class="assignment-non-start assignment-function-btn">Take Test</div></div>'
+                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['time'] +'</span></div><div class="assignment-functions"><div class="assignment-assigned assignment-function-btn">Assigned</div><div class="assignment-ended assignment-function-btn">Ended</div><div class="assignment-non-start assignment-function-btn">Take Test</div></div>'
                     parent.appendChild(assignment)
                 }
             }
             for(let i = 0; i < assignmentData.length; i++){
-                if(assignmentData[i]['assigned'] == 'false'){
+                if(!assignmentData[i]['assigned']){
                     assignment = document.createElement('div')
                     assignment.classList.add('assignment-wrapper','not-avaliable-assignment')
-                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['date'] +'</span></div><div class="assignment-functions"><div class="assignment-not-assigned assignment-function-btn">Not Assigned</div><div class="assignment-not-ended assignment-function-btn">Not Ended</div><div class="assignment-non-start assignment-function-btn">Take Test</div></div>'
+                    assignment.innerHTML = '<div class="assignment-info"><span class="assignment-title">'+ assignmentData[i]['title'] +'</span><span class="assignment-date">'+ assignmentData[i]['time'] +'</span></div><div class="assignment-functions"><div class="assignment-not-assigned assignment-function-btn">Not Assigned</div><div class="assignment-not-ended assignment-function-btn">Not Ended</div><div class="assignment-non-start assignment-function-btn">Take Test</div></div>'
                     parent.insertBefore(assignment, parent.children[0]);
                 }
             }
@@ -161,12 +161,14 @@
 
         const checkExamEnd = (data) => {
             let _data = []
-            Object.entries(data).forEach(
-                ([key, value]) => _data.push(value)
-            );
+            if(data){
+                Object.entries(data).forEach(
+                    ([key, value]) => _data.push(value)
+                );
+            }
             for(let i=0;i<_data.length;i++){
                 if(assignmentTitle == _data[i]['title']){
-                    if(_data[i]['ended'] == "true"){
+                    if(_data[i]['ended']){
                         forceEndExam('forced')
                     }
                 }
@@ -174,11 +176,11 @@
         }
 
         const getAssignmentsUpdate = () => {
-            let ref = database.ref('Assignments').child(userClass);
+            let ref = database.ref('Assigned').child(userClass).child(userSection);
             ref.on('value', function(dataSnapshot){
-                assignment_data = dataSnapshot.val()
-                generateAssignmentList()
-                checkExamEnd(assignment_data)
+                temp_data = dataSnapshot.val()
+                generateAssignmentList(temp_data)
+                checkExamEnd(temp_data)
             });
         }
 
@@ -479,8 +481,21 @@
         }
 
         const openAssignment = (assignmentName) => {
-            var started = false;
-            if(assignment_data[assignmentName]['assigned'] == 'true' && assignment_data[assignmentName]['ended'] == 'false'){
+            $.ajax({
+                type: 'POST',
+                url: '/student/get_assignment/',
+                data:{
+                    class: userClass,
+                    title: assignmentName,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },success: (dataSnapshot) => {
+                    assignment_data = dataSnapshot.assignmentData
+                    openAssignmentWindow()
+                }
+            })
+
+            const openAssignmentWindow = () => {
+                var started = false;
                 const firstAttempt = () => {
                     started = true;
                     dateToday = new Date()
@@ -491,7 +506,7 @@
                         data:{
                             user: username,
                             class: userClass,
-                            assignment: assignment_data[assignmentName]['title'],
+                            assignment: assignment_data['title'],
                             section: userSection,
                             time: _time,
                             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
@@ -507,7 +522,7 @@
                     }
                     $('.assignments-container').css({'display':'none'})
                     $('#assignment-window').css({'display':'flex'})
-                    beginTest(assignment_data[assignmentName])
+                    beginTest(assignment_data)
                 }
 
                 const checkUserInAttendees = () => {
@@ -524,7 +539,7 @@
                 }
 
                 attendees = []
-                let ref = firebase.database().ref("TurnedIn"+'/'+userClass+'/'+assignment_data[assignmentName]['title']+'/'+ userSection);
+                let ref = firebase.database().ref("TurnedIn"+'/'+userClass+'/'+assignment_data['title']+'/'+ userSection);
 
                 ref.on('value', function(dataSnapshot){
                     if(!started){

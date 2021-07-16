@@ -11,6 +11,15 @@
 <body>
     {% include 'loading.html' %}
     <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
+    <div class="section-select-wrapper">
+        <span id="section-selection-head">Select Section</span>
+        <div id="assign-section-list">
+        </div>
+        <div class="assignment-submit-funtions">
+            <span id="close-section-select-wrap" onclick="closeSectionWrap()">Close</span>
+            <span id="assign-section-select" onclick="assignSections()">Continue</span>
+        </div>
+    </div>
     <div class="container">
         <div class="navbar">
             <div class="title-logo-wrapper">
@@ -149,6 +158,103 @@
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-storage.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
+        var sectionList = []
+        var currentAssignment, assignmentFunction
+
+        const assignSections = () => {
+            today = new Date().toISOString().slice(0, 10);
+            if(assignmentFunction == 'assign'){
+                $.ajax({
+                    type: 'POST',
+                    url: '/teacher/exam_assign/',
+                    data: {
+                        class: currentClass,
+                        title: currentAssignment,
+                        section: sectionList.toString(),
+                        date: today,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },success: () => {
+                        $('.section-select-wrapper').css({'display':'none'})
+                        $('.error-message').css({'display':'flex'})
+                        $('#error-msg').html('Assigned Succssfuly!')
+                    }
+                })
+            }else if(assignmentFunction == 'end'){
+                $.ajax({
+                    type: 'POST',
+                    url: '/teacher/exam_end/',
+                    data: {
+                        class: currentClass,
+                        title: currentAssignment,
+                        section: sectionList.toString(),
+                        date: today,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },success: () => {
+                        $('.section-select-wrapper').css({'display':'none'})
+                        $('.error-message').css({'display':'flex'})
+                        $('#error-msg').html('Ended Succssfuly!')
+                    }
+                })
+            }
+        }
+
+        const closeSectionWrap = () => {
+            $('.section-select-wrapper').css({'display':'none'})
+        }
+
+        const setSectionList = (e) => {
+            let val = e.target.value
+            if(e.target.checked){
+                if(val == 'all'){
+                    sectionList = []
+                    options = document.querySelectorAll('.section-check')
+                    options.forEach(button => {
+                        button.checked = true
+                        if(button.value != 'all'){
+                            sectionList.push(button.value)
+                        }
+                    })
+                }
+                else{sectionList.push(val)}
+            }else if(!e.target.checked){
+                if(val == 'all'){
+                    options = document.querySelectorAll('.section-check')
+                    options.forEach(button => {
+                        button.checked = false
+                    })
+                    sectionList = []
+                }
+                else{sectionList = sectionList.filter(e => e !== val)}
+            }
+        }
+
+        const assignOptionListener = () => {
+            options = document.querySelectorAll('.section-check')
+            options.forEach(button => {
+                button.addEventListener('change', setSectionList)
+            })
+        }
+
+        const makeSectionList = () => {
+            let sections = ['A','B','C','D','E','F','G','H','I','J','K']
+            let parent = document.getElementById('assign-section-list')
+            for(let i=0;i<sections.length;i++){
+                let wrapper = document.createElement('div')
+                wrapper.classList.add('section-option-wrap')
+                wrapper.innerHTML = '<input type="checkbox" class="section-check" value="'+sections[i]+'"> <span class="section-name">'+sections[i]+'</span>'
+                parent.appendChild(wrapper)
+                if(i == sections.length-1){
+                    let wrapper = document.createElement('div')
+                    wrapper.classList.add('section-option-wrap')
+                    wrapper.innerHTML = '<input type="checkbox" class="section-check" value="all"><span class="section-name">All</span>'
+                    parent.appendChild(wrapper)
+                }
+            }
+            assignOptionListener()
+        }
+
+        makeSectionList()
+
         var assignment_data;
         const classBtn = document.querySelectorAll('.class-list-btn')
 
@@ -246,15 +352,7 @@
                 assignmentWrap = document.createElement('div')
                 assignmentWrap.classList.add('assignment-wrapper')
                 parent.appendChild(assignmentWrap)
-                if(temp['assigned'] == 'false'){
-                    assignmentWrap.innerHTML = '<div class="assignment-title"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assign-task assignment-function-btn">Assign</div><div class="update-task assignment-function-btn">Update</div><div class="make-results assignment-function-btn">Results</div><div class="noend-task assignment-function-btn">End</div></div>'
-                }
-                else if(temp['assigned'] == 'true' && temp['ended'] == 'false'){
-                    assignmentWrap.innerHTML = '<div class="assignment-title open-view-assignment" onclick="viewAssignment(this)"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assigned-task assignment-function-btn">Assigned</div><div class="updated-task assignment-function-btn">Update</div><div class="make-results assignment-function-btn">Results</div><div class="end-task assignment-function-btn">End</div></div>'
-                }
-                if(temp['ended'] == 'true'){
-                    assignmentWrap.innerHTML = '<div class="assignment-title"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assigned-task assignment-function-btn" >Assigned</div><div class="updated-task assignment-function-btn">Update</div><div class="view-results assignment-function-btn">Results</div><div class="ended-task assignment-function-btn">Ended</div></div>'
-                }
+                assignmentWrap.innerHTML = '<div class="assignment-title open-view-assignment" onclick="viewAssignment(this)"><span>'+ temp['title'] + '</span><span>' + temp['date'] + '</span></div><div class="assignment-functions"><div class="assign-task assignment-function-btn">Assign</div><div class="update-task assignment-function-btn">Update</div><div class="view-results assignment-function-btn">Results</div><div class="end-task assignment-function-btn">End</div></div>'
                 if(i == data.length-1){
                     reAssignUpdateButton();
                 }
