@@ -424,6 +424,65 @@ ul#rules-list li{
     background: #f2f2f2;
     overflow-y: auto;
 }
+.assignment-search-wrapper{
+    display: flex;
+    justify-content: space-between;
+}
+#show-returned{
+    padding: 0px 10px;
+    font-size: 1.1em;
+    cursor: pointer;
+    background: #4bbb50;
+    color: #f2f2f2;
+}
+#show-returned:hover{
+    background: #f2f2f2;
+    color: #4bbb50;
+}
+.returned-assignments-container{
+    padding: 25px 15px;
+}
+#back-returns{
+    padding: 8px;
+    font-size: 1.1em;
+    background: #4bbb50;
+    color: #f2f2f2;
+    cursor: pointer;
+}
+#back-returns:hover{
+    background: #f2f2f2;
+    color: #4bbb50;
+}
+#returned-assignments-wrapper{
+    padding-top: 30px;
+}
+.returned-assignment{
+    margin: 30px auto;
+    width: 80%;
+    background: #69cf6e;
+    border-radius: 20px;
+    font-size: 1.2em;
+    padding: 15px 27px;
+    overflow: hidden;
+}
+.return-assignment-result{
+    display: flex;
+    flex-direction: column;
+}
+.return-assignment-marks, .return-assignment-note{
+    background-color: #f57474;
+    margin: 8px 0px;
+    border-radius: 10px;
+    padding: 13px;
+    color: #f2f2f2;
+}
+.return-assignment-info{
+    padding: 13px;
+    background: #f2f2f2;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+}
 @keyframes blinkWarning{
     0%{
         background: #f80000;
@@ -550,11 +609,24 @@ ul#rules-list li{
     .assignment-title{
         margin-bottom: 10px;
     }
+    .assignment-search-wrapper{
+        flex-direction: column;
+    }
     #search-assignments{
         width: 100%;
     }
     .time-ticker{
         font-size: 1.5em;
+    }
+    #search-assignments{
+        margin-bottom: 20px;
+    }
+    #show-returned{
+        padding: 10px;
+    }
+    .return-assignment-info{
+        flex-direction: column;
+        text-align: center;
     }
 }
 @media screen and (max-width: 350px) {
@@ -568,5 +640,8 @@ ul#rules-list li{
         font-size: 0.99em !important;
         align-items: center;
         flex-direction: column;
+    }
+    .returned-assignment{
+        width: 100%;
     }
 }

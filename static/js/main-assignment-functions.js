@@ -120,43 +120,16 @@ const generateResults = (data) => {
     }
 }
 
-function postTask(task, title, time, desc, fileURL, date){
+function postTask(task, title){
     if(task == 'assign'){
-        _class = currentClass
-        $.ajax({
-            type: 'POST',
-            url: '/teacher/exam_assign/',
-            data:{
-                class: _class,
-                title: title,
-                time: time,
-                description: desc,
-                fileURL: fileURL,
-                date: date,
-                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-            },success :function(){
-                fetchAssignments();
-            }
-        });
+        $('.section-select-wrapper').css({'display':'block'})
+        currentAssignment = title
+        assignmentFunction = 'assign'
     }
     if(task == 'end'){
-        console.log('end')
-        _class = currentClass
-        $.ajax({
-            type: 'POST',
-            url: '/teacher/exam_end/',
-            data:{
-                class: _class,
-                title: title,
-                time: time,
-                description: desc,
-                fileURL: fileURL,
-                date: date,
-                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-            },success :function(){
-                fetchAssignments();
-            }
-        });
+        $('.section-select-wrapper').css({'display':'block'})
+        currentAssignment = title
+        assignmentFunction = 'end'
     }
     if(task == 'result'){
         loadWindow('mid', 2000)
@@ -184,32 +157,20 @@ function getAssignmentData(_method, assignment_name){
     tempData = assignment_data;
     _func = _method
 
-    if(_func == 'update'){
-        for(var i = 0; i < tempData.length; i++){
-            if(tempData[i]['title'] == taskname){
+    for(var i = 0; i < tempData.length; i++){
+        if(tempData[i]['title'] == taskname){
+            if(_func == 'update'){
                 loadWindow('mid', 1000)
                 openTask(tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file']);
             }
-        }
-    }
-    else if(_func == 'assign'){
-        for(var i = 0; i < tempData.length; i++){
-            if(tempData[i]['title'] == taskname){
-                postTask('assign', tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file'], tempData[i]['date']);
+            else if(_func == 'assign'){
+                postTask('assign', tempData[i]['title']);
             }
-        }
-    }
-    else if(_func == 'end'){
-        for(var i = 0; i < tempData.length; i++){
-            if(tempData[i]['title'] == taskname){
-                postTask('end', tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file'], tempData[i]['date']);
+            else if(_func == 'end'){
+                postTask('end', tempData[i]['title']);
             }
-        }
-    }
-    else if(_func == 'result'){
-        for(var i = 0; i < tempData.length; i++){
-            if(tempData[i]['title'] == taskname){
-                postTask('result', tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file']);
+            else if(_func == 'result'){
+                postTask('result', tempData[i]['title']);
             }
         }
     }

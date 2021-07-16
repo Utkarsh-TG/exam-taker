@@ -423,6 +423,76 @@ body{
     background: rgb(65, 138, 67);
     color: #f2f2f2;
 }
+.section-select-wrapper{
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    min-width: 300px;
+    padding: 20px;
+    background: #f2f2f2;
+    border: 15px;
+}
+#section-selection-head{
+    display: block;
+    font-size: 1.2em;
+    color: #70a842;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.section-option-wrap{
+    text-align: center;
+    padding: 5px;
+}
+#assign-section-list{
+    padding: 10px 0px;
+    margin-bottom: 10px;
+}
+.section-check{
+    margin-right: 5px;
+}
+.assignment-submit-funtions{
+    display: flex;
+    justify-content: space-between;
+}
+.results-upload-container{
+    margin: 20px 0px;
+}
+#results-note-input{
+    resize: none;
+    width: 100%;
+    margin: 10px 0px;
+    outline: none;
+    border: none;
+    padding: 10px;
+    font-size: 1.1em;
+    min-height: 100px;
+}
+#marks-input{
+    padding: 8px;
+    font-size: 1.1em;
+    outline: none;
+    border: none;
+}
+#results-submit{
+    padding: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+#results-submit:hover{
+    background: #55852e;
+    color: #f2f2f2;
+}
+#close-section-select-wrap, #assign-section-select{
+    padding: 8px;
+    background: #70a842;
+    color: #f2f2f2;
+    cursor: pointer;
+}
+#close-section-select-wrap:hover, #assign-section-select:hover{
+    background: #55852e;
+}
 #file-viewer{
     width: 100%;
 }
@@ -541,6 +611,9 @@ body{
     #search-assignments{
         width: 100%;
     } 
+    #marks-input{
+        width: 100%;
+    }
 }
 @media screen and (max-width: 350px) {
     .navbar{
