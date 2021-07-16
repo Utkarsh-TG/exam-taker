@@ -209,6 +209,7 @@ def teacherExamEnd(request):
         currentClass = request.POST['class']
         title = request.POST['title']
         section = request.POST['section']
+        time = request.POST['date']
 
         sectionList = section.split (",")
 
