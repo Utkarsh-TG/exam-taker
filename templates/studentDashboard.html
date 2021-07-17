@@ -491,6 +491,7 @@
                     csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
                 },success: (dataSnapshot) => {
                     assignment_data = dataSnapshot.assignmentData
+                    console.log(assignment_data)
                     openAssignmentWindow()
                 }
             })
