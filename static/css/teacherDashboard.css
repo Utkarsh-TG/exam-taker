@@ -137,8 +137,8 @@ body{
     margin: 0px 10px;
     background: #f2f2f2;
     cursor: pointer;
-    color: #f2f2f2;
-    background: rgb(212, 136, 136);
+    color: #000;
+    background: #e69595;
 }
 .create-task-wrapper{
     height: 100%;
@@ -538,6 +538,18 @@ body{
     border: 2px solid #000;
     min-height: inherit;
     border-radius: 5px;
+}
+.update-task{
+    background: #dee695;
+    color: #000;
+}
+.view-results{
+    background: #e195e6;
+    color: #000;
+}
+.end-task{
+    background: #95e6cf;
+    color: #000;
 }
 @media screen and (max-width: 1260px) {
     .assignment-class-functions{
