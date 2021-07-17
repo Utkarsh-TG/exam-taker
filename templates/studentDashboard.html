@@ -384,17 +384,6 @@
 
         const preventCheat = () => {
             if(_preventCheat){
-                document.addEventListener('fullscreenchange', (e) => {
-                    e.preventDefault()
-                    if (document.fullscreenElement) {
-                        console.log('fullscreen enter');
-                        generateWarning('', 'hide')
-                    } else {
-                        //render warning
-                        uploadStudentWarning()
-                        generateWarning('Warning! Return to full screen to continue paper.', 'show')
-                    }
-                });
                 window.addEventListener('beforeunload', function (e) {
                     e.preventDefault();
                     e.returnValue = '';
