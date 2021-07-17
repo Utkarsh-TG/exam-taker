@@ -111,6 +111,7 @@
         userSection = "{{ section }}"
         var attendeeList, attendees;
         var _preventCheat = true; //make it true
+        var endExamScreen = false;
 
         $('.error-message').css({'display':'{{ error_display }}'});
 
@@ -168,7 +169,7 @@
             }
             for(let i=0;i<_data.length;i++){
                 if(assignmentTitle == _data[i]['title']){
-                    if(_data[i]['ended']){
+                    if(_data[i]['ended'] && endExamScreen == false){
                         forceEndExam('forced')
                     }
                 }
@@ -284,6 +285,7 @@
         }
         
         const forceEndExam = (from) => {
+            endExamScreen = true;
             _preventCheat = false
             let endTimeLeft = 300
             const startEndExamTimer = setInterval(() => {
@@ -525,6 +527,7 @@
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
                             loadWindow('mid', 3000)
+                            endExamScreen = false;
                             firstAttempt()
                         }
                     } 
