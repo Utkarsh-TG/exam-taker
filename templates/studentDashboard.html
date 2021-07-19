@@ -482,7 +482,6 @@
                     csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
                 },success: (dataSnapshot) => {
                     assignment_data = dataSnapshot.assignmentData
-                    console.log(assignment_data)
                     openAssignmentWindow()
                 }
             })
@@ -522,8 +521,9 @@
                     // check if user already in attendee
                     for(let i = 0; i < attendees.length; i++){
                         if(attendees[i]['id'] == username){
-                            alert('You already gave exam')
-                            return false
+                            $('.error-message').css({'display':'flex'})
+                            $('#error-msg').html('You already gave exam!')
+                            break
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
                             loadWindow('mid', 3000)
