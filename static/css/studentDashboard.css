@@ -16,7 +16,7 @@ input,input:focus{
 	display: none;
 	justify-content: space-between;
 	margin-top: 50px; 
-	position: absolute;
+	position: fixed;
 	min-width: 30%;
 	font-family: 'PT Sans', sans-serif;
 	padding: 12px 25px;
@@ -299,7 +299,7 @@ ul#rules-list li{
     font-size: 1.1em;
     width: 40%;
     display: none;
-    position: absolute;
+    position: fixed;
     left: 50%;
     top: 50%;
     z-index: 50;
@@ -381,7 +381,7 @@ ul#rules-list li{
     height: 95vh;
     background: rgba(255,255,255,0.7);
     backdrop-filter: blur(25px);
-    position: absolute;
+    position: fixed;
     display: none;
     justify-content: center;
     align-items: center;
@@ -595,6 +595,9 @@ ul#rules-list li{
     .initial-submit-btn{
         font-size: 1.3em;
     }
+    .submit-warning{
+        width: 55%;
+    }
 }
 @media screen and (max-width: 450px) {
     .assignment-wrapper{
@@ -630,6 +633,9 @@ ul#rules-list li{
         flex-direction: column;
         text-align: center;
     }
+    .submit-warning{
+        width: 70%;
+    }
 }
 @media screen and (max-width: 350px) {
     .assignment-functions{
@@ -645,5 +651,8 @@ ul#rules-list li{
     }
     .returned-assignment{
         width: 100%;
+    }
+    .submit-warning{
+        width: 90%;
     }
 }

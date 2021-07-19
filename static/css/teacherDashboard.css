@@ -9,7 +9,7 @@
 	display: none;
 	justify-content: space-between;
 	margin-top: 50px; 
-	position: absolute;
+	position: fixed;
 	min-width: 250px;
 	font-family: 'Sarabun', sans-serif;
 	padding: 12px 25px;
@@ -429,7 +429,7 @@ body{
 }
 .section-select-wrapper{
     display: none;
-    position: absolute;
+    position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%,-50%);
