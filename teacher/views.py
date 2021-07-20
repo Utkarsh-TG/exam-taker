@@ -47,56 +47,26 @@ def examCreate(request):
         currentUser = request.COOKIES.get('uid')
 
     if request.method == 'POST':
+        _type = request.POST['type']
         currentClass = request.POST['class']
         title = request.POST['title']
         time = request.POST['time']
         description = request.POST['description']
-        file_URL = request.POST.get('file')
+        questions = request.POST['file']
         date = request.POST['date']
-
         #return error if title is empty
         if len(title) < 1:
             return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Enter a title!','error-display':'flex'})
-
-        assignmentData = {'title':title, 'time':time, 'description':description, 'file':file_URL, 'date':date, 'assigned':'false', 'ended':'false'}
+        
+        if(_type == 'long'):
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':questions, 'date':date, 'type':_type}
+        elif(_type == 'mcq'):
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'assigned':'false', 'ended':'false', 'type':_type}
 
         #ref database/Assignments/class/title
         db.child("Assignments").child(currentClass).child(title).set(assignmentData)
 
         return HttpResponse('')
-    
-    return redirect(teacherDashboard)
-
-def examUpdate(request):
-    #return if not logged in as teacher
-    if 'loggedIn' not in request.COOKIES:
-        return redirect(mainViews.login)
-    if 'loggedIn' in request.COOKIES:
-        if request.COOKIES.get('loggedIn') != 'teacher':
-            return redirect(mainViews.login)
-    #request userid
-    if 'uid' in request.COOKIES:
-        currentUser = request.COOKIES.get('uid')
-    
-    if request.method == 'POST':
-        currentClass = request.POST['class']
-        title = request.POST['assignment_title']
-
-        #return error if title is empty
-        if len(title) < 1 or currentClass not in validateList[0]:
-            return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Invalid Information!','error-display':'flex'})
-
-        #ref database/Assignments/class/title
-        assignmentData = db.child("Assignments").child(currentClass).child(title).get()
-        sendData = []
-        
-        if assignmentData is not None:
-            for data in assignmentData.each():
-                sendData.append(data.val())
-
-        print(sendData)
-        
-        return JsonResponse({'assignmentData':sendData})
     
     return redirect(teacherDashboard)
 
@@ -112,18 +82,22 @@ def examUpdateFile(request):
         currentUser = request.COOKIES.get('uid')
 
     if request.method == 'POST':
+        _type = request.POST['type']
         currentClass = request.POST['class']
         oldtitle = request.POST['old_title']
         title = request.POST['title']
         time = request.POST['time']
         description = request.POST['description']
-        file_URL = request.POST.get('fileURL')
+        questions = request.POST['file']
         date = request.POST['date']
 
         if len(title) < 1 or currentClass not in validateList[0]:
             return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Invalid Details!','error-display':'flex'})
         
-        assignmentData = {'title':title, 'time':time, 'description':description, 'file':file_URL, 'date':date, 'assigned':'false', 'ended':'false'}
+        if(_type == 'long'):
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':questions, 'date':date, 'type':_type}
+        if(_type == 'mcq'):
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'type':_type}
 
         #ref database/Assignments/class/title
         db.child("Assignments").child(currentClass).child(oldtitle).remove()
