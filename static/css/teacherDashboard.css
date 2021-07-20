@@ -149,11 +149,9 @@ body{
     padding: 25px 25px;
 }
 .assignment-form-input{
-    padding: 10px 10px;
+    padding: 10px;
     font-size: 1.1em;
-    background: rgba(250,250,250,0.2);
     margin: 25px 0px;
-    border: 1px solid #000;
 }
 .title-time-wrapper{
     display: flex;
@@ -550,6 +548,47 @@ body{
 .end-task{
     background: #95e6cf;
     color: #000;
+}
+#student-answers{
+    white-space: pre-wrap; 
+}
+.description-input{
+    width: 100%;
+    min-height: 100px;
+    max-height: 100px;
+    overflow-y: auto;
+    font-size: 1.1em;
+    font-family: 'PT Sans', sans-serif;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+.file-input{
+    width: 100%;
+    min-height: 400px;
+    max-height: 400px;    
+    overflow-y: auto;
+    font-size: 1.1em;
+    font-family: 'PT Sans', sans-serif;
+    resize: none;
+    padding: 10px;
+}
+.exam-type-selector{
+    font-size: 1.1em;
+    background: #f2f2f2;
+    font-family: 'PT Sans', sans-serif;
+    padding: 10px;
+    margin: 20px 0px;
+}
+.mcq-question-container{
+    display: none;
+    width: 100%;
+    background: #f2f2f2;
+    padding: 10px;
+    font-size: 1.1em;
+    font-family: 'PT Sans', sans-serif;
+    min-height: 400px;
+    max-height: 500px;
+    overflow-y: auto;
 }
 @media screen and (max-width: 1260px) {
     .assignment-class-functions{

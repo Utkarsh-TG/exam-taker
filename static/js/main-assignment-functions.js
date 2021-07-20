@@ -1,9 +1,7 @@
 //update
-var updated_file, updated_file_URL, results_data, c_section, _title, _id
-var fileChange = false;
-var oldFile, oldTitle;
+var results_data, c_section, _title, _id, oldTitle, _type;
 
-function openTask(title, time, desc, fileURL){
+function openTask(title, time, desc, fileText, type){
     loadWindow('mid', 2000)
     $('.create-task-wrapper').css({'display':'block'});
     $('.results-container').css({'display':'none'})
@@ -13,10 +11,25 @@ function openTask(title, time, desc, fileURL){
     $('#update-title-input').val(title)
     $('#update-time-input').val(time)
     $('#update-description-input').val(desc)
-    fileViewer = document.getElementById('file-viewer')
-    fileViewer.src = fileURL
+    _type = type
+    if(type == 'long'){
+        $('#update-file-input').css({'display':'block'})
+        $('.mcq-question-container').css({'display':'none'})
+        $('#update-file-input').val(fileText)
+    }
+    else if(type == 'mcq'){
+        $('#update-file-input').css({'display':'none'})
+        $('.mcq-question-container').css({'display':'block'})
+        parent = document.getElementById('update-question-container')
+        parent.innerHTML = ''
+        for(let i=0;i<fileText.length;i++){
+            wrap = document.createElement('div')
+            wrap.classList.add('update-question-wrapper')
+            wrap.innerHTML = '<input type="text" class="question" placeholder="Enter Question" value="'+ fileText[i]['question'] +'"><input type="text" class="option" placeholder="Option A" value="'+ fileText[i]['options'][0] + '"><input type="text" class="option" placeholder="Option B" value="'+ fileText[i]['options'][1] + '"><input type="text" class="option" placeholder="Option C" value="'+ fileText[i]['options'][2] + '"><input type="text" class="option" placeholder="Option D" value="'+ fileText[i]['options'][3] + '"><input type=text class="correct" placeholder="Correct Option" value="'+ fileText[i]['correct'] + '"><button id="delete-question-btn" onclick="deleteQuestion(this)>Delete</button>'
+            parent.appendChild(wrap)
+        }
+    }
     oldTitle = title;
-    oldFile = fileURL;
 }
 
 //results
@@ -161,7 +174,7 @@ function getAssignmentData(_method, assignment_name){
         if(tempData[i]['title'] == taskname){
             if(_func == 'update'){
                 loadWindow('mid', 1000)
-                openTask(tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file']);
+                openTask(tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file'], tempData[i]['type']);
             }
             else if(_func == 'assign'){
                 postTask('assign', tempData[i]['title']);
@@ -215,24 +228,19 @@ function reAssignUpdateButton(){
     });
 }
 
-$('#update-file-input').on('change', function(){
-    fileChange = true
-}) 
-
-function postUpdatedAssignmentForm(){
-    _class = currentClass
-    // today's date
-    today = new Date().toISOString().slice(0, 10);
+const postUpdatedAssignment = (questions) => {
+    console.log(questions)
     $.ajax({
         type: 'POST',
         url: '/teacher/exam_update_file/',
         data:{
+            type: _type,
             class: _class,
             old_title: oldTitle,
             title: $('#update-title-input').val(),
             time: $('#update-time-input').val(),
             description: $('#update-description-input').val(),
-            fileURL: updated_file_URL,
+            file: questions,
             date: today,
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
         },success :function(){
@@ -243,42 +251,26 @@ function postUpdatedAssignmentForm(){
             $('#update-assignment').css({'display':'none'});
         }
     });
-    $('#update-assignment').trigger("reset");
-}
+}   
 
-$(document).on('submit', '#update-assignment', function(e){
+$('#update-form-submit').on('click', (e) => {
     loadWindow('mid', 2000)
     e.preventDefault()
-    if(fileChange){
-        newStorageRef = storage.ref('Assignments').child(currentClass).child($('#update-title-input').val())
-        // uploading file this storage ref
-        updated_file = document.getElementById("update-file-input").files[0];
-        thisref = newStorageRef.child(updated_file.name).put(updated_file);
-        thisref.on('state_changed',function(snapshot) {
-                console.log('Done');
-            }, function(error) {
-                console.log('Error',error);
-            }, function() {
-                thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                    updated_file_URL = downloadURL;
-                    postUpdatedAssignmentForm();
-                });
-            })
-    }else{
-        _class = currentClass
-        // today's date
-        today = new Date().toISOString().slice(0, 10);
+    _class = currentClass
+    today = new Date().toISOString().slice(0, 10);
+    if(_type == 'long'){
         $.ajax({
             type: 'POST',
             url: '/teacher/exam_update_file/',
             data:{
+                type: _type,
                 class: _class,
                 old_title: oldTitle,
                 title: $('#update-title-input').val(),
                 time: $('#update-time-input').val(),
                 description: $('#update-description-input').val(),
+                file: $('#update-file-input').val(),
                 date: today,
-                fileURL: oldFile,
                 csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
             },success :function(){
                 fetchAssignments();
@@ -288,8 +280,27 @@ $(document).on('submit', '#update-assignment', function(e){
                 $('#update-assignment').css({'display':'none'});
             }
         });
-        $('#update-assignment').trigger("reset");
     }
+    else if(_type == 'mcq'){
+        let questions = []
+        questionList = document.getElementsByClassName('update-question-wrapper')
+        for(let j=0;j<questionList.length;j++){
+            tempData = {}
+            q = questionList[j].children[0].value
+            o1 = questionList[j].children[1].value
+            o2 = questionList[j].children[2].value
+            o3 = questionList[j].children[3].value
+            o4 = questionList[j].children[4].value
+            c = questionList[j].children[5].value
+            optionsList = [o1,o2,o3,o4]
+            tempData.question = q
+            tempData.options = optionsList
+            tempData.correct = c.toUpperCase()
+            questions.push(tempData)
+        }
+        postUpdatedAssignment(JSON.stringify(questions))
+    }
+    $('#update-assignment').trigger("reset");
 })
 
 const returnStudentResultWrapper = () =>{

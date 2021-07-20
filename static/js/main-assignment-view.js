@@ -202,7 +202,7 @@ $('#section-list').on('change', function(){
     currentSection = $('#section-list').val()
     document.getElementById('chat-log').innerHTML = ''
     document.getElementById('warning-log').innerHTML = ''
-    document.createElement('div').innerHTML = ''
+    document.getElementById('attendee-log').innerHTML = ''
     generateChatUI()
     generateWarningUI()
     generateAttendeesUI()
