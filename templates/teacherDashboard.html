@@ -13,8 +13,7 @@
     <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
     <div class="section-select-wrapper">
         <span id="section-selection-head">Select Section</span>
-        <div id="assign-section-list">
-        </div>
+        <div id="assign-section-list"></div>
         <div class="assignment-submit-funtions">
             <span id="close-section-select-wrap" onclick="closeSectionWrap()">Close</span>
             <span id="assign-section-select" onclick="assignSections()">Continue</span>
@@ -52,32 +51,52 @@
                             <input type="text" name="assignment-title" id="assignment-title-input" required class="assignment-form-input" placeholder="Title" autocomplete="off">
                             <input type="text" name="assignment-time" class="assignment-form-input" id="assignment-time-input" required placeholder="Time" autocomplete="off">
                         </div>
-                        <textarea rows="5" cols="40" name="progress" id="assignment-description-input" required class="assignment-form-input" placeholder="Description" autocomplete="off"></textarea>
-                        <div class="assignment-file-wrapper">
-                            <input type="file" name="files[]" id="assignment-file-input" accept="application/pdf">
+                        <textarea id="assignment-description-input" class="description-input" placeholder="Description" autocomplete="off"></textarea>
+                        <div class="exam-type-selector">
+                            <input type="radio" name="exam-type" id="long-answer-type" class="exam-type-selector" value="long" checked> Long Answers
+                            <input type="radio" name="exam-type" id="mcq-answer-type" class="exam-type-selector" value="mcq"> MCQ Answers
+                        </div>
+                        <textarea type="text" id="assignment-file-input" class="file-input" placeholder="Questions"></textarea>
+                        <div class="mcq-question-container">
+                            <button id="add-question-btn" onclick="addQuestion('create')">Add</button>
+                            <div id="question-container">
+                                <div class="question-wrapper">
+                                    <input type="text" class="question" placeholder="Enter Question"><input type="text" class="option" placeholder="Option A">
+                                    <input type="text" class="option" placeholder="Option B">
+                                    <input type="text" class="option" placeholder="Option C">
+                                    <input type="text" class="option" placeholder="Option D">
+                                    <input type=text class="correct" placeholder="Correct Option">
+                                    <button id="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>
+                                </div>
+                            </div>
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="assignment-form-submit">
                     </div>
-                    <form id="update-assignment">
+                    <div id="update-assignment">
                         {% csrf_token %}
                         <div class="title-time-wrapper">
                             <input type="text" name="update-assignment-title" id="update-title-input" required class="assignment-form-input" placeholder="Title" autocomplete="off">
                             <input type="text" name="assignment-time" class="assignment-form-input" id="update-time-input" required placeholder="Time" autocomplete="off">
                         </div>
-                        <textarea rows="5" cols="40" name="progress" id="update-description-input" required class="assignment-form-input" placeholder="Description" autocomplete="off"></textarea>
-                        <div class="assignment-file-wrapper">
-                            <input type="file" name="files[]" id="update-file-input" accept="application/pdf">
+                        <textarea id="update-description-input" class="description-input" placeholder="Description" autocomplete="off"></textarea>
+                        <textarea type="file" id="update-file-input"  class="file-input" placeholder="Questions"></textarea>
+                        <div class="mcq-question-container">
+                            <button id="add-question-btn" onclick="addQuestion('update')">Add</button>
+                            <div id="update-question-container">
+
+                            </div>
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="update-form-submit">
-                        <iframe id="file-viewer" src="" frameborder="0"></iframe>
-                    </form>
+                    </div>
                 </div>
             </div>
             <div class="assignments-container">
                 <div class="assignment-search-wrapper">
                     <input type="text" id="search-assignments" placeholder="Search..">
                 </div>
-                <div id="assignment-container"></div>
+                <div id="assignment-container">
+
+                </div>
             </div>
             <div class="assignment-window">
                 <div class="section-selector">
@@ -427,6 +446,45 @@
                 }
             }
         })
+
+        const examTypeSelector = document.getElementsByClassName('exam-type-selector')
+        var paperType = 'long';
+        for(let i=0;i<examTypeSelector.length;i++){
+            examTypeSelector[i].addEventListener('change', () => {
+                if(examTypeSelector[i].value == 'mcq'){
+                    //display mcq container
+                    paperType = 'mcq'
+                    $('.mcq-question-container').css({'display':'block'})
+                    $('#assignment-file-input').css({'display':'none'})
+                }
+                else if(examTypeSelector[i].value == 'long'){
+                    //display long container
+                    paperType = 'long'
+                    $('.mcq-question-container').css({'display':'none'})
+                    $('#assignment-file-input').css({'display':'block'})
+                }
+            })
+        }
+
+        const addQuestion = (from) => {
+            if(from == 'create'){
+                parent = document.getElementById('question-container')
+            }else if(from == 'update'){
+                parent = document.getElementById('update-question-container')
+            }
+            const makeQuestion = () => {
+                wrap = document.createElement('div')
+                wrap.classList.add('question-wrapper')
+                wrap.innerHTML = '<input type="text" class="question" placeholder="Enter Question"><input type="text" class="option" placeholder="Option A"><input type="text" class="option" placeholder="Option B"><input type="text" class="option" placeholder="Option C"><input type="text" class="option" placeholder="Option D"><input type=text class="correct" placeholder="Correct Option"><button id="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>' 
+                parent.appendChild(wrap)
+            }
+            makeQuestion()
+        }
+
+        const deleteQuestion = (e) => {
+            parent = e.parentNode
+            parent.parentNode.removeChild(parent)
+        }
     </script>
 </body>
 </html>
