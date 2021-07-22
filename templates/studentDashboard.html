@@ -65,7 +65,7 @@
                         <div class="block-messg">You have been blocked! Ask your teacher to unblock to continue paper.</div>
                     </div>
                     <div class="question-paper-wrapper" id="question-paper-wrapper">
-
+                        <textarea id="long-answer-based" readonly></textarea>
                     </div>
                     <div class="answer-form-wrapepr">
                         <div id="answer-form">
@@ -241,34 +241,16 @@
         //on exam start
         var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked;
 
-        const displayExamPaper = (file) => {
-            var url = file;
-
-            pdfjsLib.disableWorker = true;
-
-            pdfjsLib.getDocument(url).then(function getPdfHelloWorld(pdf) {
-                parent = document.getElementById('question-paper-wrapper')
-                for(let i=1;i<pdf.numPages;i++){
-                    pdf.getPage(i).then((page) => {
-                        canvas = document.createElement('canvas')
-                        canvas.classList.add('question-paper-page')
-                        var scale = 1.5;
-                        var viewport = page.getViewport(scale);
-
-                        var context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-
-                        page.render({canvasContext: context, viewport: viewport});
-                        parent.appendChild(canvas)
-                    })
-                }
-            });
+        const displayLongExamPaper = (file) => {
+            parent = document.getElementById('long-answer-based')
+            parent.value = file
         }
 
         const designExamForm = (data) => {
             $('.exam-info-bar').html(data['title'])
-            displayExamPaper(data['file'])
+            if(data['type']=='long'){
+                displayLongExamPaper(data['file'])
+            }
             displayChat()
         }
 
@@ -385,7 +367,8 @@
         }
 
         const preventCheat = () => {
-            if(_preventCheat){
+            allow_changewindow = assignment_data['windowCheat']
+            if(!allow_changewindow){
                 window.addEventListener('beforeunload', function (e) {
                     e.preventDefault();
                     e.returnValue = '';
@@ -558,7 +541,7 @@
         }
         
         //cheat prevention
-        if(_preventCheat){
+        if(!_preventCheat){
             window.oncontextmenu = function () {
                 return false;
             }
