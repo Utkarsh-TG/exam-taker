@@ -61,13 +61,20 @@
                             <button id="add-question-btn" onclick="addQuestion('create')">Add</button>
                             <div id="question-container">
                                 <div class="question-wrapper">
-                                    <input type="text" class="question" placeholder="Enter Question"><input type="text" class="option" placeholder="Option A">
+                                    <input type="text" class="question" placeholder="Enter Question">
+                                    <input type="text" class="option" placeholder="Option A">
                                     <input type="text" class="option" placeholder="Option B">
                                     <input type="text" class="option" placeholder="Option C">
                                     <input type="text" class="option" placeholder="Option D">
                                     <input type=text class="correct" placeholder="Correct Option">
-                                    <button id="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>
+                                    <button class="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="cheat-prevent-inputs">
+                            <input type="checkbox" id="allow-change-window-check" class="cheat-prevent-input" value="changewindow"> Allow window change
+                            <div class="advanced-cheat-prevent">
+                                <input type="checkbox" id="allow-change-question-check" class="cheat-prevent-input" value="changequestion"> Allow return to question
                             </div>
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="assignment-form-submit">
@@ -80,10 +87,16 @@
                         </div>
                         <textarea id="update-description-input" class="description-input" placeholder="Description" autocomplete="off"></textarea>
                         <textarea type="file" id="update-file-input"  class="file-input" placeholder="Questions"></textarea>
-                        <div class="mcq-question-container">
+                        <div class="update-mcq-question-container">
                             <button id="add-question-btn" onclick="addQuestion('update')">Add</button>
                             <div id="update-question-container">
 
+                            </div>
+                        </div>
+                        <div class="update-cheat-prevent-inputs">
+                            <input type="checkbox" id="update-allow-change-window-check" class="update-cheat-prevent-input" value="changewindow"> Allow window change
+                            <div class="update-advanced-cheat-prevent">
+                                <input type="checkbox" id="update-allow-change-question-check" class="cheat-prevent-input" value="changequestion"> Allow return to question
                             </div>
                         </div>
                         <input type="submit" class="submit-btn" value="Save" id="update-form-submit">
@@ -456,12 +469,14 @@
                     paperType = 'mcq'
                     $('.mcq-question-container').css({'display':'block'})
                     $('#assignment-file-input').css({'display':'none'})
+                    $('.advanced-cheat-prevent').css({'display':'block'})
                 }
                 else if(examTypeSelector[i].value == 'long'){
                     //display long container
                     paperType = 'long'
                     $('.mcq-question-container').css({'display':'none'})
                     $('#assignment-file-input').css({'display':'block'})
+                    $('.advanced-cheat-prevent').css({'display':'none'})
                 }
             })
         }
@@ -475,7 +490,7 @@
             const makeQuestion = () => {
                 wrap = document.createElement('div')
                 wrap.classList.add('question-wrapper')
-                wrap.innerHTML = '<input type="text" class="question" placeholder="Enter Question"><input type="text" class="option" placeholder="Option A"><input type="text" class="option" placeholder="Option B"><input type="text" class="option" placeholder="Option C"><input type="text" class="option" placeholder="Option D"><input type=text class="correct" placeholder="Correct Option"><button id="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>' 
+                wrap.innerHTML = '<input type="text" class="question" placeholder="Enter Question"><input type="text" class="option" placeholder="Option A"><input type="text" class="option" placeholder="Option B"><input type="text" class="option" placeholder="Option C"><input type="text" class="option" placeholder="Option D"><input type=text class="correct" placeholder="Correct Option"><button class="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>' 
                 parent.appendChild(wrap)
             }
             makeQuestion()
