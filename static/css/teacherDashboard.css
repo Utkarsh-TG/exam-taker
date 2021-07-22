@@ -579,7 +579,7 @@ body{
     padding: 10px;
     margin: 20px 0px;
 }
-.mcq-question-container{
+.mcq-question-container, .update-mcq-question-container{
     display: none;
     width: 100%;
     background: #f2f2f2;
@@ -589,6 +589,46 @@ body{
     min-height: 400px;
     max-height: 500px;
     overflow-y: auto;
+}
+.question, .option, .correct{
+    padding: 5px;
+    font-size: 1em;
+    margin: 5px;
+    display: block;
+    width: 70%;
+}
+.question{
+    margin-bottom: 10px;
+}
+.correct{
+    margin-top: 10px;
+    width: fit-content;
+}
+#add-question-btn{
+    padding: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 5px;
+    margin-bottom: 20px;
+}
+.delete-question-btn{
+    padding: 5px;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin: 5px;
+    margin-top: 10px;
+}
+.cheat-prevent-inputs, .update-cheat-prevent-inputs{
+    background: #f2f2f2;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+.advanced-cheat-prevent, .update-advanced-cheat-prevent{
+    display: none;
+}
+.question-wrapper, .update-question-wrapper{
+    margin: 15px 0;
 }
 @media screen and (max-width: 1260px) {
     .assignment-class-functions{
@@ -610,6 +650,10 @@ body{
         min-height: 150px;
         margin-bottom: 30px;
     }
+    .question, .option{
+        width: 100%;
+    }
+
 }
 @media screen and (max-width: 550px) {
     .title-time-wrapper{
@@ -716,5 +760,8 @@ body{
     }
     .student-select-btn{
         font-size: 1.1em;
+    }
+    .correct{
+        width: 100%;
     }
 }
