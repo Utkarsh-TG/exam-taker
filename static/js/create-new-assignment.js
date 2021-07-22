@@ -9,7 +9,7 @@ firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 var storage = firebase.storage();
 
-const postAssignment = (questions) => {
+const postAssignment = (questions, w_cheat, q_cheat) => {
     today = new Date().toISOString().slice(0, 10);
     _class = currentClass
     $.ajax({
@@ -18,6 +18,8 @@ const postAssignment = (questions) => {
         data:{
             type: 'mcq',
             class: _class,
+            windowCheat: w_cheat,
+            questionCheat: q_cheat,
             title: $('#assignment-title-input').val(),
             time: $('#assignment-time-input').val(),
             description: $('#assignment-description-input').val(),
@@ -26,6 +28,16 @@ const postAssignment = (questions) => {
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
         },success :function(){
             fetchAssignments();
+            //reset
+            $('#assignment-title-input').val('')
+            $('#assignment-time-input').val('')
+            $('#assignment-description-input').val('')
+            $('#assignment-file-input').val('')
+            $('#allow-change-window-check')[0].checked = false
+            $('#allow-change-question-check')[0].checked = false
+            $('#long-answer-type')[0].checked = false
+            $('#mcq-answer-type')[0].checked = false
+
             $('.create-task-wrapper').css({'display':'none'});
             $('.assignments-container').css({'display':'block'});
             $('#create-assignment').css({'display':'none'});
@@ -35,15 +47,24 @@ const postAssignment = (questions) => {
 }
 
 $('#assignment-form-submit').on('click', (e) => {
+    let window_cheat = false
+    let view_question = false
     loadWindow('mid', 2000)
     today = new Date().toISOString().slice(0, 10);
     _class = currentClass
+    if($('#allow-change-window-check').is(':checked')){
+        window_cheat = true;
+    }
+    if($('#allow-change-question-check').is(':checked')){
+        view_question = true;
+    }
     if(paperType == 'long'){
         $.ajax({
             type: 'POST',
             url: '/teacher/exam_create/',
             data:{
                 type: 'long',
+                windowCheat: window_cheat,
                 class: _class,
                 title: $('#assignment-title-input').val(),
                 time: $('#assignment-time-input').val(),
@@ -52,6 +73,16 @@ $('#assignment-form-submit').on('click', (e) => {
                 file: $('#assignment-file-input').val(),
                 csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
             },success :function(){
+                //reset
+                $('#assignment-title-input').val('')
+                $('#assignment-time-input').val('')
+                $('#assignment-description-input').val('')
+                $('#assignment-file-input').val('')
+                $('#allow-change-window-check')[0].checked = false
+                $('#allow-change-question-check')[0].checked = false
+                $('#long-answer-type')[0].checked = false
+                $('#mcq-answer-type')[0].checked = false
+
                 fetchAssignments();
                 $('.create-task-wrapper').css({'display':'none'});
                 $('.assignments-container').css({'display':'block'});
@@ -77,7 +108,7 @@ $('#assignment-form-submit').on('click', (e) => {
             tempData.correct = c.toUpperCase()
             questions.push(tempData)
         }
-        postAssignment(JSON.stringify(questions))
+        postAssignment(JSON.stringify(questions), window_cheat, view_question)
     }   
     $('#create-assignment').trigger("reset"); 
 });

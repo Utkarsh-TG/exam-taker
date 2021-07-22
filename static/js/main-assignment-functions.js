@@ -1,7 +1,7 @@
 //update
 var results_data, c_section, _title, _id, oldTitle, _type;
 
-function openTask(title, time, desc, fileText, type){
+function openTask(title, time, desc, fileText, type, cheatData){
     loadWindow('mid', 2000)
     $('.create-task-wrapper').css({'display':'block'});
     $('.results-container').css({'display':'none'})
@@ -14,18 +14,31 @@ function openTask(title, time, desc, fileText, type){
     _type = type
     if(type == 'long'){
         $('#update-file-input').css({'display':'block'})
-        $('.mcq-question-container').css({'display':'none'})
+        $('.update-mcq-question-container').css({'display':'none'})
         $('#update-file-input').val(fileText)
+        $('.update-advanced-cheat-prevent').css({'display':'none'})
+        if(cheatData['windowCheat']){
+            $('#update-allow-change-window-check')[0].checked = true;
+        }
     }
     else if(type == 'mcq'){
         $('#update-file-input').css({'display':'none'})
-        $('.mcq-question-container').css({'display':'block'})
+        $('.update-mcq-question-container').css({'display':'block'})
+        $('.update-advanced-cheat-prevent').css({'display':'block'})
+        if(cheatData['windowCheat']){
+            $('#update-allow-change-window-check')[0].checked = true;
+        }
+        if(cheatData['questionCheat']){
+            $('#update-allow-change-question-check')[0].checked = true;
+        }else if(!cheatData['questionCheat']){
+            $('#update-allow-change-question-check')[0].checked = false;
+        }
         parent = document.getElementById('update-question-container')
         parent.innerHTML = ''
         for(let i=0;i<fileText.length;i++){
             wrap = document.createElement('div')
             wrap.classList.add('update-question-wrapper')
-            wrap.innerHTML = '<input type="text" class="question" placeholder="Enter Question" value="'+ fileText[i]['question'] +'"><input type="text" class="option" placeholder="Option A" value="'+ fileText[i]['options'][0] + '"><input type="text" class="option" placeholder="Option B" value="'+ fileText[i]['options'][1] + '"><input type="text" class="option" placeholder="Option C" value="'+ fileText[i]['options'][2] + '"><input type="text" class="option" placeholder="Option D" value="'+ fileText[i]['options'][3] + '"><input type=text class="correct" placeholder="Correct Option" value="'+ fileText[i]['correct'] + '"><button id="delete-question-btn" onclick="deleteQuestion(this)>Delete</button>'
+            wrap.innerHTML = '<input type="text" class="question" placeholder="Enter Question" value="'+ fileText[i]['question'] +'"><input type="text" class="option" placeholder="Option A" value="'+ fileText[i]['options'][0] + '"><input type="text" class="option" placeholder="Option B" value="'+ fileText[i]['options'][1] + '"><input type="text" class="option" placeholder="Option C" value="'+ fileText[i]['options'][2] + '"><input type="text" class="option" placeholder="Option D" value="'+ fileText[i]['options'][3] + '"><input type=text class="correct" placeholder="Correct Option" value="' + fileText[i]['correct'] + '"><button class="delete-question-btn" onclick="deleteQuestion(this)">Delete</button>'
             parent.appendChild(wrap)
         }
     }
@@ -174,7 +187,7 @@ function getAssignmentData(_method, assignment_name){
         if(tempData[i]['title'] == taskname){
             if(_func == 'update'){
                 loadWindow('mid', 1000)
-                openTask(tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file'], tempData[i]['type']);
+                openTask(tempData[i]['title'], tempData[i]['time'], tempData[i]['description'], tempData[i]['file'], tempData[i]['type'], tempData[i]);
             }
             else if(_func == 'assign'){
                 postTask('assign', tempData[i]['title']);
@@ -228,7 +241,7 @@ function reAssignUpdateButton(){
     });
 }
 
-const postUpdatedAssignment = (questions) => {
+const postUpdatedAssignment = (questions, q_cheat, w_cheat) => {
     console.log(questions)
     $.ajax({
         type: 'POST',
@@ -236,6 +249,8 @@ const postUpdatedAssignment = (questions) => {
         data:{
             type: _type,
             class: _class,
+            windowCheat: w_cheat,
+            questionCheat: q_cheat,
             old_title: oldTitle,
             title: $('#update-title-input').val(),
             time: $('#update-time-input').val(),
@@ -254,16 +269,25 @@ const postUpdatedAssignment = (questions) => {
 }   
 
 $('#update-form-submit').on('click', (e) => {
+    let window_cheat = false
+    let view_question = false
     loadWindow('mid', 2000)
     e.preventDefault()
     _class = currentClass
     today = new Date().toISOString().slice(0, 10);
+    if($('#update-allow-change-window-check').is(':checked')){
+        window_cheat = true;
+    }
+    if($('#update-allow-change-window-check').is(':checked')){
+        view_question = true;
+    }
     if(_type == 'long'){
         $.ajax({
             type: 'POST',
             url: '/teacher/exam_update_file/',
             data:{
                 type: _type,
+                windowCheat: window_cheat,
                 class: _class,
                 old_title: oldTitle,
                 title: $('#update-title-input').val(),
@@ -298,7 +322,7 @@ $('#update-form-submit').on('click', (e) => {
             tempData.correct = c.toUpperCase()
             questions.push(tempData)
         }
-        postUpdatedAssignment(JSON.stringify(questions))
+        postUpdatedAssignment(JSON.stringify(questions), window_cheat, view_question)
     }
     $('#update-assignment').trigger("reset");
 })
