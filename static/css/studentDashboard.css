@@ -146,6 +146,15 @@ body{
     transform: translate(-50%,-50%);
     z-index: 20;
 }
+#long-answer-based{
+    width: 100%;
+    height: 100%;
+    resize: none;
+    background: #f2f2f2;
+    font-size: 1.1em;
+    font-family: 'PT Sans', sans-serif;
+    padding: 20px;
+}
 .left-pane{
     flex: 1;
     display: flex;
@@ -158,6 +167,7 @@ body{
     flex-direction: column;
     height: 100%;
     background: #ff6363;
+    min-height: 700px;
 }
 .exam-info-bar{
     width: 100%;
@@ -169,6 +179,7 @@ body{
     justify-content: center;
     font-size: 2em;
     font-weight: 600;
+    min-height: 70px;
 }
 .exam-rules{
     width: 100%;
@@ -190,6 +201,7 @@ ul#rules-list li{
     font-size: 2.5em;
     font-weight: 600;
     letter-spacing: 5px;
+    min-height: 70px;
 }
 .submit-btn-wrapper{
     width: 100%;
@@ -205,7 +217,7 @@ ul#rules-list li{
     background: #f80000;
 }
 .assignment-chat{
-    min-height: 50%;
+    min-height: 330px;
     max-height: 50%;
     width: 100%;
     flex: 3;
@@ -363,6 +375,7 @@ ul#rules-list li{
     align-items: center;
     position: absolute;
     height: 100%;
+    min-height: inherit;
     z-index: 40;
     flex: 3;
     left: 25%;
