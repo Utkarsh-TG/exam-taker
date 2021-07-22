@@ -54,14 +54,32 @@ def examCreate(request):
         description = request.POST['description']
         questions = request.POST['file']
         date = request.POST['date']
+        windowCheat = request.POST['windowCheat']
+        if(_type == 'mcq'):
+            questionCheat = request.POST['questionCheat']
         #return error if title is empty
+        if(windowCheat == 'true'):
+            windowCheat = True
+        if(windowCheat == 'false'):
+            windowCheat = False
+
+        try:
+            questionCheat
+        except NameError:
+            questionCheat = None
+        else:
+            if(questionCheat == 'true'):
+                questionCheat = True
+            if(questionCheat == 'false'):
+                questionCheat = False
+        
         if len(title) < 1:
             return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Enter a title!','error-display':'flex'})
         
         if(_type == 'long'):
-            assignmentData = {'title':title, 'time':time, 'description':description, 'file':questions, 'date':date, 'type':_type}
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':questions, 'date':date, 'type':_type, 'windowCheat': windowCheat}
         elif(_type == 'mcq'):
-            assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'assigned':'false', 'ended':'false', 'type':_type}
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'type':_type, 'windowCheat': windowCheat, 'questionCheat':questionCheat}
 
         #ref database/Assignments/class/title
         db.child("Assignments").child(currentClass).child(title).set(assignmentData)
@@ -90,14 +108,32 @@ def examUpdateFile(request):
         description = request.POST['description']
         questions = request.POST['file']
         date = request.POST['date']
+        windowCheat = request.POST['windowCheat']
+        if(_type == 'mcq'):
+            questionCheat = request.POST['questionCheat']
+
+        if(windowCheat == 'true'):
+            windowCheat = True
+        if(windowCheat == 'false'):
+            windowCheat = False
+
+        try:
+            questionCheat
+        except NameError:
+            questionCheat = None
+        else:
+            if(questionCheat == 'true'):
+                questionCheat = True
+            if(questionCheat == 'false'):
+                questionCheat = False
 
         if len(title) < 1 or currentClass not in validateList[0]:
             return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Invalid Details!','error-display':'flex'})
         
         if(_type == 'long'):
-            assignmentData = {'title':title, 'time':time, 'description':description, 'file':questions, 'date':date, 'type':_type}
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':questions, 'date':date, 'type':_type, 'windowCheat': windowCheat}
         if(_type == 'mcq'):
-            assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'type':_type}
+            assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'type':_type, 'windowCheat': windowCheat, 'questionCheat':questionCheat}
 
         #ref database/Assignments/class/title
         db.child("Assignments").child(currentClass).child(oldtitle).remove()
