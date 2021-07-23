@@ -203,6 +203,9 @@ $('#section-list').on('change', function(){
     document.getElementById('chat-log').innerHTML = ''
     document.getElementById('warning-log').innerHTML = ''
     document.getElementById('attendee-log').innerHTML = ''
+    old_attendee_data = null
+    old_chat_data = null
+    old_warning_data = null
     generateChatUI()
     generateWarningUI()
     generateAttendeesUI()
