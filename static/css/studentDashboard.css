@@ -137,14 +137,14 @@ body{
     background: rgb(255, 0, 0);
 }
 .assignment-window-inner{
-    height: 95%;
-    width: 95%;
+    height: 100%;
+    width: 100%;
+    min-height: fit-content;
     display: flex;
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
+    height: auto;
     z-index: 20;
+    min-height: 100vh;
 }
 #long-answer-based{
     width: 100%;
@@ -160,6 +160,7 @@ body{
     display: flex;
     flex-direction: column;
     height: 100%;
+    height: auto;
 }
 .right-pane{
     flex: 3;
@@ -168,6 +169,7 @@ body{
     height: 100%;
     background: #ff6363;
     min-height: 700px;
+    height: auto;
 }
 .exam-info-bar{
     width: 100%;
@@ -535,6 +537,7 @@ ul#rules-list li{
         min-height: 100%;
         max-height: 100%;
         float: left;
+        min-height: inherit;
     }
     .assignment-chat{
         display: inline-block;
@@ -542,6 +545,7 @@ ul#rules-list li{
         max-width: 33%;
         min-height: 100%;
         max-height: 100%;
+        min-height: inherit;
     }
     .chat-container {
         min-height: 250px;
@@ -559,9 +563,13 @@ ul#rules-list li{
         display: inline-block;
         max-width: 50%;
         min-width: 50%;
+        text-align: center;
     }
     .initial-submit-btn{
         font-size: 1.8em;
+    }
+    #long-answer-based, #answer-form, #text-answers{
+        min-height: inherit;
     }
 }
 @media screen and (max-width: 850px) {
@@ -584,6 +592,7 @@ ul#rules-list li{
     .exam-info-bar{
         float: none;
         min-width: 100%;
+        min-height: 50px;
         min-height: 50px;
     }
     .exam-rules{
@@ -610,6 +619,9 @@ ul#rules-list li{
     }
     .submit-warning{
         width: 55%;
+    }
+    #long-answer-based, #text-answers, #answer-form{
+        min-height: inherit;
     }
 }
 @media screen and (max-width: 450px) {
