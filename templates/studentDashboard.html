@@ -160,6 +160,80 @@
             }
         }
 
+        //notify
+        notify = {
+            list: [],
+            id: 0,
+            compatible: function() {
+                if (typeof Notification === 'undefined') {
+                    return false;
+                }
+                return true;
+            },
+            authorize: function() {
+                if (notify.compatible()) {
+                    Notification.requestPermission(function(){});
+                }
+            },
+            show: function(event) {
+                if (typeof Notification === 'undefined') {
+                    return; 
+                }
+                if (notify.compatible()){
+                    notify.id++;
+                    var id = notify.id;
+                    if(event == 'assignment'){
+                        notify.list[id] = new Notification('New assignment update!', {
+                            body: "An assignment has been changed. \nCheck out the changes.",
+                            tag: id,
+                            icon: "{% static 'images/logo-square.png' %}",
+                            lang: "",
+                            dir: "auto",
+                        });
+                    }else if(event == 'return'){
+                        notify.list[id] = new Notification('New return!', {
+                            body: "New assignment has returned. \nCheck out the changes.",
+                            tag: id,
+                            icon: "{% static 'images/logo-square.png' %}",
+                            lang: "",
+                            dir: "auto",
+                        });
+                    }
+                }
+            }
+        };
+
+        if (Notification.permission !== "granted") {
+            notify.authorize()
+        }
+
+        firstLoadAssignments = true
+        firstLoadReturns = true
+
+        //assignment updates
+        const assignmentUpdateNotifications = () => {
+            let ref =  database.ref('Assigned').child(userClass).child(userSection);
+            ref.on('value', function(dataSnapshot){
+                if(!firstLoadAssignments){
+                    notify.show('assignment')
+                }
+                firstLoadAssignments = false
+            });
+        }
+
+        const returnsUpdateNotifications = () => {
+            let ref =  database.ref('Returns').child(userClass).child(userSection).child(username);
+            ref.on('value', function(dataSnapshot){
+                if(!firstLoadReturns){
+                    notify.show('return')
+                }
+                firstLoadReturns = false
+            });
+        }
+        assignmentUpdateNotifications()
+        returnsUpdateNotifications()
+
+
         const checkExamEnd = (data) => {
             let _data = []
             if(data){
