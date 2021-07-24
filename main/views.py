@@ -1,16 +1,17 @@
 import json
 import random
 from json import dumps
-from django.http import request
+from random import randint
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
-from django.http.request import HttpRequest
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse
-from django.template import RequestContext
 from django.conf import settings
 import pyrebase
+from cryptography.fernet import Fernet
 from main.models import *
-from .forms import DocumentForm
 from teacher import views as teacherViews
 from student import views as studentViews
 
@@ -22,11 +23,10 @@ firebase = pyrebase.initialize_app(config)
 #initializing firebase database
 db=firebase.database()
 
-#initializing firebase storage
-storage = firebase.storage()
-
 #validate class and section
 validateList = [['12','11','10','9','8','7','6','5','4','3','2','1'],['A','B','C','D','E','F','G','H','I','J','K']]
+verification_code = 1
+c_user = {}
 
 def ignition(request):
     return JsonResponse({'test':'run successful'}, status=200)
@@ -52,12 +52,21 @@ def studentSignup(request):
         password = request.POST.get('password')
         _class = "10"
 
-        #db reference
-        data = {'blocked':False, 'id':uid, 'username':username, 'class':_class, 'section':_section, 'password':password}
-
         if _class in validateList[0] and _section in validateList[1]:
+            response = redirect(login)
+
+            key = Fernet.generate_key()
+            fernet = Fernet(key)
+
+            encPassword = fernet.encrypt(password.encode())
+
+            response.set_cookie('encryption', key.decode("UTF-8"), max_age=60*60*60*60*100)
+
+            data = {'blocked':False, 'id':uid, 'username':username, 'class':_class, 'section':_section, 'password':str(encPassword.decode("UTF-8"))}
+        
             db.child('Login').child('student').child(_class).child(_section).child(uid).set(data)
-            return redirect(login)
+            
+            return response
 
     return redirect(signup)    
 
@@ -101,6 +110,10 @@ def userLogin(request):
         teacherUsername = request.POST.get('teacher-username')
         teacherPassword = request.POST.get('teacher-password')
 
+        #if(teacherPassword == "abc12345"):
+            #ask to change default
+            #return
+
         if len(teacherUsername) < 3 or len(teacherPassword) < 8:
             return render(request, 'login.html', {'error':'Login Failed! Ivalid Details', 'displayError':'flex'})
 
@@ -112,9 +125,15 @@ def userLogin(request):
             for data in loginDdata.each():
                 teacherData.append(data.val())
 
+        if 'encryption' in request.COOKIES:
+            key = request.COOKIES.get('encryption')
+            fernet = Fernet(key.encode("UTF-8"))
+
         for i in range(len(teacherData)):
             if teacherUsername == teacherData[i]['username']:
-                if teacherPassword == teacherData[i]['password']:
+                decPassword = teacherData[i]['password'].encode("UTF-8")
+                decPassword = fernet.decrypt(decPassword).decode()
+                if teacherPassword == decPassword:
                     response = redirect(teacherViews.teacherDashboard)
                     #save credentials to cookies
                     response.set_cookie('loggedIn', 'teacher', max_age=60*60*60*60*60)
@@ -125,12 +144,21 @@ def userLogin(request):
                     #return password error
                     response = render(request, 'login.html', {'error':'Login Failed! Invalid Password', 'error-display':'flex'})
                     return response
+
     elif request.method == 'POST' and request.POST.get('login-for') == 'student':
         studentUsername = request.POST.get('student-username')
         studentPassword = request.POST.get('student-password')
         studentClass = request.POST.get('student-class')
         studentSection = (request.POST.get('student-section')).upper()
         
+        #if studentPassword == 'abc12345':
+            #ask to change
+        #    return
+
+        if 'encryption' in request.COOKIES:
+            key = request.COOKIES.get('encryption')
+            fernet = Fernet(key.encode("UTF-8"))
+
         #validate class & section
         if studentClass not in validateList[0]:
             return render(request, 'login.html', {'error':'Login Failed! Ivalid Class'})
@@ -149,7 +177,9 @@ def userLogin(request):
         if len(dataList) > 0:
             for i in range(len(dataList)):
                 if str(dataList[i]['id']) == studentUsername:
-                    if dataList[i]['password'] == studentPassword:
+                    decPassword = dataList[i]['password'].encode("UTF-8")
+                    decPassword = fernet.decrypt(decPassword).decode()
+                    if decPassword == studentPassword:
                         response = redirect(studentViews.studentDashboard)
                         #save student credentials to cookies
                         response.set_cookie('loggedIn', 'student', max_age=60*60*60*60*60)
@@ -191,3 +221,125 @@ def examChatMessage(request):
         db.child('Chat').child(_class).child(assignment).child(section).child(time).set(chatData)
 
         return HttpResponse('')
+
+def forgotPassword(request):
+    if 'loggedIn' in request.COOKIES:
+        return redirect(login)
+
+    return render()
+
+def sendVerification(request):
+    global c_user
+    if request.method == 'POST' and request.POST.get('user') == 'student':
+        id = request.POST.get('userid')
+        _class = request.POST.get('class')
+        section = request.POST.get('section')
+
+        data = db.child('Login').child('student').child(_class).child(section).child(id).get().val()
+        
+        c_user = {'logged':'student', 'class':_class, 'section':section, 'userid':id}
+
+        if data is not None:
+            generateVerification(data['email'])
+
+            return render()
+    elif request.method == 'POST' and request.POST.get('user') == 'teacher':
+        id = request.POST.get('userid')
+
+        data = db.child('Login').child('Teacher').child(id).get().val()
+        
+        c_user = {'logged':'teacher', 'userid':id}
+
+        if data is not None:
+            generateVerification(data['email'])
+
+            return render()
+
+    return redirect(login)
+
+def verifyCode(request):
+    global verification_code
+
+    if request.method == 'POST':
+        entered_verification_code = request.POST.get('verificationcode')
+        if(entered_verification_code == verification_code):
+            #return change password page
+            return render()
+        else:
+            return JsonResponse({'error':''})
+
+    return redirect(login)
+
+def resetPassword(request):
+    if 'loggedIn' in request.COOKIES:
+        return redirect(login)
+
+    global c_user
+
+    if request.method == 'POST' and c_user['user'] == 'student':
+        password = request.POST.get('password')
+        _class = c_user['class']
+        _section = c_user['section']
+        uid = c_user['userid']
+
+        if _class in validateList[0] and _section in validateList[1]:
+            response = redirect(login)
+
+            key = Fernet.generate_key()
+            fernet = Fernet(key)
+
+            encPassword = fernet.encrypt(password.encode())
+
+            response.set_cookie('encryption', key.decode("UTF-8"), max_age=60*60*60*60*100)
+
+            data = {'password':str(encPassword.decode("UTF-8"))}
+        
+            db.child('Login').child('student').child(_class).child(_section).child(uid).update(data)
+            
+            return response
+    elif request.method == 'POST' and c_user['user'] == 'teacher':
+        password = request.POST.get('password')
+        uid = c_user['userid']
+
+        response = redirect(login)
+
+        key = Fernet.generate_key()
+        fernet = Fernet(key)
+
+        encPassword = fernet.encrypt(password.encode())
+
+        response.set_cookie('encryption', key.decode("UTF-8"), max_age=60*60*60*60*100)
+
+        data = {'password':str(encPassword.decode("UTF-8"))}
+
+        db.child('Login').child('Teacher').child(uid).update(data)
+
+    return redirect(login)
+
+#custom
+def generateVerification(email):
+    global verification_code
+
+    if(checkEmail(email)):
+        verification_code = str(randint(100000, 999999))
+        m_subject = "Password Change Request on ExamTaker"
+        m_message = ""
+        m_sender = settings.EMAIL_HOST_USER
+        m_recievers = [email,]
+        msg = EmailMultiAlternatives(m_subject, m_message, m_sender, [m_recievers])
+        html_content = "<h3>You have applied for password change on ExamTaker.</h3><br><p>Your verification code for <strong>"+ email+ "</strong> is <strong>"+ verification_code+ "<strong>, use this code to verify your email. Ignore if you didn't applied.</p><br> Thanks & Regards <br> Team ExamTaker"
+        msg.attach_alternative(html_content, "text/html")
+        try:
+            msg.send()
+            return(True)
+        except:
+            return(False)
+    
+    return(False)
+
+def checkEmail(email):
+    try:
+        validate_email(email)
+        return True
+    except ValidationError:
+        return False
