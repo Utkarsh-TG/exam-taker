@@ -1,3 +1,4 @@
+import os
 import json
 import random
 from json import dumps
@@ -18,10 +19,21 @@ from student import views as studentViews
 #firebase config
 config = settings.FIREBASE_CONFIG
 
+SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
+
+SERVICE_KEY_DIR = os.path.join(SETTINGS_PATH, 'Exam', "service_account_email_key.json")
+
+with open(SERVICE_KEY_DIR, "r") as f:
+    service_account_email = json.loads(f.read())
+    print(service_account_email)
+
 firebase = pyrebase.initialize_app(config)
 
-#initializing firebase database
-db=firebase.database()
+# Get a reference to the auth service
+auth = firebase.auth()
+
+# Get a reference to the database service
+db = firebase.database()
 
 #validate class and section
 validateList = [['12','11','10','9','8','7','6','5','4','3','2','1'],['A','B','C','D','E','F','G','H','I','J','K']]
@@ -151,9 +163,7 @@ def userLogin(request):
         studentClass = request.POST.get('student-class')
         studentSection = (request.POST.get('student-section')).upper()
         
-        #if studentPassword == 'abc12345':
-            #ask to change
-        #    return
+        token = auth.create_custom_token(studentUsername)
 
         if 'encryption' in request.COOKIES:
             key = request.COOKIES.get('encryption')
