@@ -108,6 +108,7 @@ GitHub.sublime-settings
 
 # api config
 *config.json
+service_account_email_key.json
 
 #static
 *staticfiles/
