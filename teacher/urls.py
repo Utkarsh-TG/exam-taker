@@ -12,4 +12,5 @@ urlpatterns = [
     path('exam_student_unblock/', views.examUnblockStudent),
     path('exam_result/', views.teacherExamResult),
     path('exam_results_return/', views.teacherExamResultReturn),
+    path('auth_detail/', views.authData)
 ]
