@@ -13,5 +13,6 @@ urlpatterns = [
     path('user_login/', views.userLogin),
     path('chat_message/', views.examChatMessage),
     path('logout/', views.logout),
+    path('home/', views.home),
     path('', views.home),
 ]
