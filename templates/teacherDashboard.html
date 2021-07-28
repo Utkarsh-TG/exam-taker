@@ -196,6 +196,24 @@
         var sectionList = []
         var currentAssignment, assignmentFunction
 
+        const authorize = () => {
+            $.ajax({
+                type: 'POST',
+                url: '/student/auth_detail/',
+                data:{
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },success: (data) => {
+                    firebase.initializeApp(JSON.parse(data.firebase_config));
+                    database = firebase.database();
+                    storage = firebase.storage();
+                    auth = firebase.auth()
+                    auth.signInWithEmailAndPassword(data.mail, data.password);
+                }
+            })
+        }
+                
+        authorize()
+
         const assignSections = () => {
             today = new Date().toISOString().slice(0, 10);
             if(assignmentFunction == 'assign'){
@@ -287,7 +305,7 @@
             }
             assignOptionListener()
         }
-
+        
         makeSectionList()
 
         var assignment_data;
