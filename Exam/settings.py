@@ -128,6 +128,14 @@ FIREBASE_DIR = os.path.join(SETTINGS_PATH, 'Exam', "firebase_config.json")
 with open(FIREBASE_DIR, "r") as f:
     FIREBASE_CONFIG = json.loads(f.read())
 
+#auth config
+#student
+STUDENT_MAIL = os.getenv('STUDENT_ACCOUNT_EMAIL')
+STUDENT_PASSWORD = os.getenv('STUDENT_ACCOUNT_PASSWORD')
+#teacher
+TEACHER_MAIL = os.getenv('TEACHER_ACCOUNT_EMAIL')
+TEACHER_PASSWORD = os.getenv('TEACHER_ACCOUNT_PASSWORD')
+
 #email backend config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
