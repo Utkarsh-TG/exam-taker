@@ -1,14 +1,6 @@
 // create assignment 
 var file, today, thisref, file_URL;
 
-//firebase config
-var firebaseConfig = {"apiKey": "AIzaSyD7ddl63JBC-Xxj2vKe99R5JJkxBJDvTVY", "authDomain": "exam-3d397.firebaseapp.com", "databaseURL": "https://exam-3d397-default-rtdb.asia-southeast1.firebasedatabase.app", "projectId": "exam-3d397", "storageBucket": "exam-3d397.appspot.com", "messagingSenderId": "647787494671", "appId": "1:647787494671:web:6afa3e03b1184d113c127a", "measurementId": "G-2CTKYSPY7P" }
-
-firebase.initializeApp(firebaseConfig);
-
-var database = firebase.database();
-var storage = firebase.storage();
-
 const postAssignment = (questions, w_cheat, q_cheat) => {
     today = new Date().toISOString().slice(0, 10);
     _class = currentClass
