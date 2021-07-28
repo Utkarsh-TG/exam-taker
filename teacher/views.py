@@ -15,11 +15,24 @@ from main import views as mainViews
 config = settings.FIREBASE_CONFIG
 firebase = pyrebase.initialize_app(config)
 
+# Get a reference to the auth service
+auth = firebase.auth()
+
+teacher_mail = settings.TEACHER_MAIL
+teacher_password = settings.TEACHER_PASSWORD
+
 #initializing firebase database
 db=firebase.database()
 
 #validate class and section
 validateList = [['12','11','10','9','8','7','6','5','4','3','2','1'],['A','B','C','D','E','F','G','H','I','J','K']]
+
+user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
+
+def authData(request):
+    if request.method == 'POST':
+        data = {'mail':teacher_mail, 'password':teacher_password, 'firebase_config':dumps(config)}
+        return JsonResponse(data)
 
 def teacherDashboard(request):
     #return if not logged in as teacher
@@ -258,9 +271,9 @@ def examBlockStudent(request):
         data = {'blocked':True}
 
         #ref database/Login/student/class/section/username
-        db.child('Login').child('student').child(_class).child(_section).child(username).update(data)
+        db.child('Login').child('Student').child(_class).child(_section).child(username).update(data)
 
-        userData = db.child('Login').child('student').child(_class).child(_section).child(username).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(username).get().val()
         
         unbanData = {'error':'banned', 'id':username, 'name':userData['username']}
 
@@ -289,10 +302,10 @@ def examUnblockStudent(request):
         data = {'blocked':False}
 
         #ref database/Login/student/class/section/username
-        userData = db.child('Login').child('student').child(_class).child(_section).child(username).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(username).get().val()
 
         if userData is not None:
-            db.child('Login').child('student').child(_class).child(_section).child(username).update(data)
+            db.child('Login').child('Student').child(_class).child(_section).child(username).update(data)
         
         unbanData = {'error':'unbanned', 'id':username, 'name':userData['username']}
 
