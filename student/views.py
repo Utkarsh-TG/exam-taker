@@ -19,9 +19,22 @@ firebase = pyrebase.initialize_app(config)
 #initializing firebase database
 db=firebase.database()
 
+# Get a reference to the auth service
+auth = firebase.auth()
+
+student_mail = settings.STUDENT_MAIL
+student_password = settings.STUDENT_PASSWORD
+
+user = auth.sign_in_with_email_and_password(student_mail, student_password)
+
 #validate class and section
 validateList = [['12','11','10','9','8','7','6','5','4','3','2','1'],['A','B','C','D','E','F','G','H','I','J','K']]
 
+def authData(request):
+    if request.method == 'POST':
+        data = {'mail':student_mail, 'password':student_password, 'firebase_config':dumps(config)}
+        return JsonResponse(data)
+        
 def studentDashboard(request):
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
@@ -39,7 +52,7 @@ def studentDashboard(request):
     if 'section' in request.COOKIES:
         currentSection = request.COOKIES.get('section')
 
-    return render(request, 'studentDashboard.html', {'username':currentUser, 'class':currentClass, 'section':currentSection, 'FIREBASE_CONFIG':dumps(config)})
+    return render(request, 'studentDashboard.html', {'username':currentUser, 'class':currentClass, 'section':currentSection, 'user_token':dumps(user)})
 
 def studentGetExam(request):
     if 'loggedIn' not in request.COOKIES:
@@ -55,7 +68,7 @@ def studentGetExam(request):
         _class = request.POST['class']
         title = request.POST['title']
 
-        data = db.child('Assignments').child(_class).child(title).get().val()
+        data = db.child('Assignments').child(_class).child(title).get(user['idToken']).val()
 
         return JsonResponse({'assignmentData':data})
 
@@ -85,11 +98,11 @@ def studentExamSubmit(request):
             return HttpResponse('')
         
         #getting user data
-        userData = db.child('Login').child('student').child(_class).child(_section).child(_username).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(_username).get(user['idToken']).val()
 
         data = {'username':_username, 'answers':_answers, 'files':_file, 'time':_time, 'name':userData['username']}
 
-        db.child('Answers').child(_class).child(_title).child(_section).child(_username).update(data)
+        db.child('Answers').child(_class).child(_title).child(_section).child(_username).update(data, user['idToken'])
 
         return HttpResponse('')
     
@@ -114,13 +127,13 @@ def studentExamWarn(request):
         _assignment = request.POST['assignment']
         
         #getting user data
-        userData = db.child('Login').child('student').child(_class).child(_section).child(_user).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(_user).get(user['idToken']).val()
 
         banData = {'error':'warned', 'id':_user, 'name':userData['username']}
 
         if not userData['blocked']:
             #ref database/Warnings/class/assignment/section/time
-            db.child('Warnings').child(_class).child(_assignment).child(_section).child(_time).set(banData)
+            db.child('Warnings').child(_class).child(_assignment).child(_section).child(_time).set(banData, user['idToken'])
         
         return HttpResponse('')
 
@@ -145,7 +158,7 @@ def studentExamBlock(request):
         _assignment = request.POST['assignment']
 
         #getting user data
-        userData = db.child('Login').child('student').child(_class).child(_section).child(_user).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(_user).get(user['idToken']).val()
 
         data = {'blocked':True}
 
@@ -153,10 +166,10 @@ def studentExamBlock(request):
 
         if not userData['blocked']:
             #ref database/Login/student/class/section/username
-            db.child('Login').child('student').child(_class).child(_section).child(_user).update(data)
+            db.child('Login').child('Student').child(_class).child(_section).child(_user).update(data, user['idToken'])
 
             #ref database/Warnings/class/assignment/section/time
-            db.child('Warnings').child(_class).child(_assignment).child(_section).child(_time).set(banData)
+            db.child('Warnings').child(_class).child(_assignment).child(_section).child(_time).set(banData, user['idToken'])
         
         return HttpResponse('')
         
@@ -180,11 +193,11 @@ def studentExamAttendee(request):
         _time = request.POST['time']
         _assignment = request.POST['assignment']
 
-        userData = db.child('Login').child('student').child(_class).child(_section).child(_user).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(_user).get(user['idToken']).val()
 
         data = {'id':_user, 'username':userData['username']}
 
-        db.child('TurnedIn').child(_class).child(_assignment).child(_section).child(_time).set(data)
+        db.child('TurnedIn').child(_class).child(_assignment).child(_section).child(_time).set(data, user['idToken'])
 
         return HttpResponse('')
 
