@@ -106,10 +106,11 @@
             $('#input-file-name').html($('#answer-file').val().split(/(\\|\/)/g).pop())
         })
 
-        username = "{{ username }}"
-        userClass = "{{ class }}"
-        userSection = "{{ section }}"
-        var attendeeList, attendees;
+        var username = "{{ username }}"
+        var userClass = "{{ class }}"
+        var userSection = "{{ section }}"
+
+        var attendeeList, attendees, database, storage, auth;
         var _preventCheat = true; //make it true
         var endExamScreen = false;
 
@@ -118,14 +119,28 @@
         $('#close-error').click(function(){
             $('.error-message').fadeOut(500);
         });
+        
+        const authorize = () => {
+            $.ajax({
+                type: 'POST',
+                url: '/student/auth_detail/',
+                data:{
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },success: (data) => {
+                    firebase.initializeApp(JSON.parse(data.firebase_config));
+                    database = firebase.database();
+                    storage = firebase.storage();
+                    auth = firebase.auth()
+                    auth.signInWithEmailAndPassword(data.mail, data.password);
+                    getAssignmentsUpdate()
+                    assignmentUpdateNotifications()
+                    returnsUpdateNotifications()
+                }
+            })
+        }
+                
+        authorize()
 
-        var firebaseConfig = JSON.parse('{{ FIREBASE_CONFIG|escapejs }}')
-
-        firebase.initializeApp(firebaseConfig);
-
-        var database = firebase.database();
-        var storage = firebase.storage();
-         
         //generate assignments UI
         const generateAssignmentList = (data) => {
             let parent = document.getElementById('assignments-container')
@@ -230,9 +245,6 @@
                 firstLoadReturns = false
             });
         }
-        assignmentUpdateNotifications()
-        returnsUpdateNotifications()
-
 
         const checkExamEnd = (data) => {
             let _data = []
@@ -258,8 +270,6 @@
                 checkExamEnd(temp_data)
             });
         }
-
-        getAssignmentsUpdate()
 
         const hideReturnedAssignments = () => {
             $('.assignments-container').css({'display':'block'})
@@ -508,7 +518,7 @@
         }
         
         const checkUserBlock = () => {
-            let ref = database.ref('Login/student').child(userClass).child(userSection).child(username)
+            let ref = database.ref('Login/Student').child(userClass).child(userSection).child(username)
             ref.on('value', (dataSnapshot)=>{
                 userBlockData = dataSnapshot.val()
                 if(userBlockData['blocked']){
