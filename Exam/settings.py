@@ -136,6 +136,9 @@ STUDENT_PASSWORD = os.getenv('STUDENT_ACCOUNT_PASSWORD')
 TEACHER_MAIL = os.getenv('TEACHER_ACCOUNT_EMAIL')
 TEACHER_PASSWORD = os.getenv('TEACHER_ACCOUNT_PASSWORD')
 
+#session engine
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+
 #email backend config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
