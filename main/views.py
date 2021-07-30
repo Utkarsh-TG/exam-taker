@@ -215,6 +215,7 @@ def userLogin(request):
     return redirect(login)
 
 def examChatMessage(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(login)
@@ -247,6 +248,7 @@ def forgotPassword(request):
     return render(request, 'forgotPass.html', {'error':'Change your default passowrd!','display':'flex'})
 
 def sendVerification(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     if request.method == 'POST' and request.POST.get('user') == 'student':
         id = request.POST.get('userid')
         _class = request.POST.get('class')
@@ -285,6 +287,7 @@ def sendVerification(request):
     return redirect(login)
 
 def verifyCode(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     if request.method == 'POST':
         entered_verification_code = request.POST.get('verificationcode')
 
@@ -316,6 +319,7 @@ def verifyCode(request):
     return redirect(login)
 
 def resetPassword(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     if 'loggedIn' in request.COOKIES:
         return redirect(login)
 
@@ -378,6 +382,7 @@ def resetPassword(request):
 
 #custom
 def generateVerification(email, logged, _user, _class, section):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     if(checkEmail(email)):
         verification_code = str(randint(100000, 999999))
         if logged:
