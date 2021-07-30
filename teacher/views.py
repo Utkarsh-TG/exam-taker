@@ -49,6 +49,7 @@ def teacherDashboard(request):
     return redirect(mainViews.login)
 
 def examCreate(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -95,13 +96,14 @@ def examCreate(request):
             assignmentData = {'title':title, 'time':time, 'description':description, 'file':json.loads(questions), 'date':date, 'type':_type, 'windowCheat': windowCheat, 'questionCheat':questionCheat}
 
         #ref database/Assignments/class/title
-        db.child("Assignments").child(currentClass).child(title).set(assignmentData)
+        db.child("Assignments").child(currentClass).child(title).set(assignmentData, user['idToken'])
 
         return HttpResponse('')
     
     return redirect(teacherDashboard)
 
 def examUpdateFile(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -150,13 +152,14 @@ def examUpdateFile(request):
 
         #ref database/Assignments/class/title
         db.child("Assignments").child(currentClass).child(oldtitle).remove()
-        db.child("Assignments").child(currentClass).child(title).update(assignmentData)
+        db.child("Assignments").child(currentClass).child(title).update(assignmentData, user['idToken'])
 
         return redirect(teacherDashboard)
 
     return redirect(teacherDashboard)
 
 def teacherExamRequest(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -174,7 +177,7 @@ def teacherExamRequest(request):
             return render(request, 'teacherDashboard.html', {'username':currentUser, 'error':'Invalid Class!','error-display':'flex'})
         
         #ref database/Assignments/class
-        assignments = db.child('Assignments').child(currentClass).get()
+        assignments = db.child('Assignments').child(currentClass).get(user['idToken'])
         assignments_data = []
 
         if assignments.val() is not None:
@@ -186,6 +189,7 @@ def teacherExamRequest(request):
     return redirect(teacherDashboard)
 
 def teacherExamStart(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -211,13 +215,14 @@ def teacherExamStart(request):
 
         #ref database/Assignments/class/title
         for i in range(0,len(sectionList)):
-            db.child("Assigned").child(currentClass).child(sectionList[i]).child(title).update(assignmentData)
+            db.child("Assigned").child(currentClass).child(sectionList[i]).child(title).update(assignmentData, user['idToken'])
 
         return HttpResponse('')
 
     return redirect(teacherDashboard)
 
 def teacherExamEnd(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -243,7 +248,7 @@ def teacherExamEnd(request):
 
         #ref database/Assignments/class/title
         for i in range(0,len(sectionList)):
-            db.child("Assigned").child(currentClass).child(sectionList[i]).child(title).update(assignmentData)
+            db.child("Assigned").child(currentClass).child(sectionList[i]).child(title).update(assignmentData, user['idToken'])
 
         db.child('Chat').child(currentClass).child(title).remove()
         db.child('TurnedIn').child(currentClass).child(title).remove()
@@ -254,6 +259,7 @@ def teacherExamEnd(request):
     return redirect(teacherDashboard)
 
 def examBlockStudent(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -271,20 +277,21 @@ def examBlockStudent(request):
         data = {'blocked':True}
 
         #ref database/Login/student/class/section/username
-        db.child('Login').child('Student').child(_class).child(_section).child(username).update(data)
+        db.child('Login').child('Student').child(_class).child(_section).child(username).update(data, user['idToken'])
 
-        userData = db.child('Login').child('Student').child(_class).child(_section).child(username).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(username).get(user['idToken']).val()
         
         unbanData = {'error':'banned', 'id':username, 'name':userData['username']}
 
         #ref database/Warnings/title/section/time
-        db.child('Warnings').child(_class).child(assignmentName).child(_section).child(time).set(unbanData)
+        db.child('Warnings').child(_class).child(assignmentName).child(_section).child(time).set(unbanData, user['idToken'])
         
         return HttpResponse('')
 
     return redirect(teacherDashboard)
 
 def examUnblockStudent(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as teacher
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -302,21 +309,22 @@ def examUnblockStudent(request):
         data = {'blocked':False}
 
         #ref database/Login/student/class/section/username
-        userData = db.child('Login').child('Student').child(_class).child(_section).child(username).get().val()
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(username).get(user['idToken']).val()
 
         if userData is not None:
-            db.child('Login').child('Student').child(_class).child(_section).child(username).update(data)
+            db.child('Login').child('Student').child(_class).child(_section).child(username).update(data, user['idToken'])
         
         unbanData = {'error':'unbanned', 'id':username, 'name':userData['username']}
 
         #ref database/Warnings/title/section/time
-        db.child('Warnings').child(_class).child(assignmentName).child(_section).child(time).set(unbanData)
+        db.child('Warnings').child(_class).child(assignmentName).child(_section).child(time).set(unbanData ,user['idToken'])
 
         return HttpResponse('')
 
     return redirect(teacherDashboard)
 
 def teacherExamResult(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -334,13 +342,14 @@ def teacherExamResult(request):
         if _class not in validateList[0]:
             return HttpResponse('')
 
-        data = db.child('Answers').child(_class).child(_title).get().val()
+        data = db.child('Answers').child(_class).child(_title).get(user['idToken']).val()
 
         return JsonResponse({'resultData':data})
     
     return redirect(teacherDashboard)
 
 def teacherExamResultReturn(request):
+    user = auth.sign_in_with_email_and_password(teacher_mail, teacher_password)
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -362,7 +371,7 @@ def teacherExamResultReturn(request):
 
         data = {'class':_class, 'section':_section, 'title':_title, 'id':_id, 'marks':_marks, 'note':_desc, 'date':_date}
 
-        db.child('Returns').child(_class).child(_section).child(_id).child(_title).set(data)
+        db.child('Returns').child(_class).child(_section).child(_id).child(_title).set(data, user['idToken'])
 
         return HttpResponse('')
 

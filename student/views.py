@@ -55,6 +55,7 @@ def studentDashboard(request):
     return render(request, 'studentDashboard.html', {'username':currentUser, 'class':currentClass, 'section':currentSection, 'user_token':dumps(user)})
 
 def studentGetExam(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
@@ -75,6 +76,7 @@ def studentGetExam(request):
     return redirect(studentDashboard)
     
 def studentExamSubmit(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -109,6 +111,7 @@ def studentExamSubmit(request):
     return redirect(studentDashboard)
 
 def studentExamWarn(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -140,6 +143,7 @@ def studentExamWarn(request):
     return redirect(studentDashboard)
 
 def studentExamBlock(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
     #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
@@ -176,7 +180,8 @@ def studentExamBlock(request):
     return redirect(studentDashboard)
 
 def studentExamAttendee(request):
-     #return if not logged in as student
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
+    #return if not logged in as student
     if 'loggedIn' not in request.COOKIES:
         return redirect(mainViews.login)
     if 'loggedIn' in request.COOKIES:
