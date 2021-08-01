@@ -77,8 +77,58 @@ const openStudentResult = (id) => {
     $('.students-wrapper').css({'display':'none'})
     $('#student-id').html(results_data[c_section][id]['username'])
     $('#student-name').html(results_data[c_section][id]['name'])
-    $('#student-answers').html(results_data[c_section][id]['answers'])
-    $('#student-file').attr({'src':results_data[c_section][id]['files']})
+    if(results_data[c_section][id]['type'] == 'long'){
+        $('#long-results').css({'display':'block'})
+        $('#marks-calc').css({'display':'none'})
+        $('#short-results').css({'display':'none'})
+        $('#student-answers').html(results_data[c_section][id]['answers'])
+        $('#student-file').attr({'src':results_data[c_section][id]['files']})
+    }
+    else if(results_data[c_section][id]['type'] == 'mcq'){
+        $('#long-results').css({'display':'none'})
+        $('#marks-calc').css({'display':'block'})
+        $('#short-results').css({'display':'block'})
+        let generateMcqQuestions = (data) => {
+            let parent = document.getElementById('short-results')
+            parent.innerHTML = ''
+            answers = results_data[c_section][id]['answers']
+            console.log(data)
+            console.log(answers)
+            var totalMarks = 0
+            for(let i=0;i<data.length;i++){
+                if(answers[i+1] === undefined){
+                    answers[i+1] = 'Not Attempted'
+                }
+                if(answers[i+1] == data[i]['correct']){
+                    totalMarks += 1
+                }
+                wrap = document.createElement('div')
+                wrap.classList.add('result-question-wrapper')
+                wrap.innerHTML= "<span class='result-question'>"+ (i+1) + ") " + data[i]['question'] +"</span><div class='result-option'>(A) "+ data[i]['options'][0] +"</div>" + "<div class='result-option'>(B) "+ data[i]['options'][1] +"</div>" + "<div class='result-option'>(C) "+ data[i]['options'][2] +"</div>" + "<div class='result-option'>(D) "+ data[i]['options'][3] +"</div><div class='result-answers-wrapper'><span class='result-correct-option'>Corrrect : <strong>"+ data[i]['correct'] + "</strong></span><span class='student-answer'>Student Answer : <strong>"+ answers[i+1] +"</strong></span></div>"
+                parent.appendChild(wrap)
+            }
+            $('#marks-calc').html('Total Marks : '+totalMarks)
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/teacher/exam_request/',
+            data:{
+                class: currentClass,
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+            },success :function(data){
+                data = data['assignment_list']
+                for(let i=0;i<data.length;i++){
+                    if(data[i]['title'] == _title){
+                        tempData = data[i]['file']
+                        generateMcqQuestions(tempData)
+                        break
+                    }
+                }
+            }
+        })
+        let parent = document.getElementById('short-results')
+
+    }
 }
 
 const getStudentResults = (e) => {
