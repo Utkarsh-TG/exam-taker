@@ -13,6 +13,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse
 from django.conf import settings
 import pyrebase
+import hashlib, binascii
 from cryptography.fernet import Fernet
 from requests.api import request
 from main.models import *
@@ -71,14 +72,9 @@ def studentSignup(request):
         if _class in validateList[0] and _section in validateList[1]:
             response = redirect(login)
 
-            key = Fernet.generate_key()
-            fernet = Fernet(key)
+            encPassword = hash_password(password)
 
-            encPassword = fernet.encrypt(password.encode())
-
-            response.set_cookie('encryption', key.decode("UTF-8"), max_age=60*60*60*60*100)
-
-            data = {'blocked':False, 'id':uid, 'username':username, 'class':_class, 'section':_section, 'password':str(encPassword.decode("UTF-8")), 'key':str(key.decode("UTF-8"))}
+            data = {'blocked':False, 'id':uid, 'username':username, 'class':_class, 'section':_section, 'password':str(encPassword)}
 
             db.child('Login').child('Student').child(_class).child(_section).child(uid).set(data, user['idToken'])
             
@@ -129,9 +125,9 @@ def userLogin(request):
 
         if(teacherPassword == "abc12345"):
             #ask to change default
-            return
+            return redirect(forgotPassword)
 
-        if len(teacherUsername) < 3 or len(teacherPassword) < 8:
+        if len(teacherUsername) < 3:
             return render(request, 'login.html', {'error':'Login Failed! Ivalid Details', 'displayError':'flex'})
 
         #ref database/Login/Teacher
@@ -142,15 +138,9 @@ def userLogin(request):
             for data in loginDdata.each():
                 teacherData.append(data.val())
 
-        if 'encryption' in request.COOKIES:
-            key = request.COOKIES.get('encryption')
-            fernet = Fernet(key.encode("UTF-8"))
-
         for i in range(len(teacherData)):
             if teacherUsername == teacherData[i]['username']:
-                decPassword = teacherData[i]['password'].encode("UTF-8")
-                decPassword = fernet.decrypt(decPassword).decode()
-                if teacherPassword == decPassword or teacherPassword == teacherData[i]['password']:
+                if verify_password(teacherData[i]['password'], teacherPassword):
                     response = redirect(teacherViews.teacherDashboard)
                     #save credentials to cookies
                     response.set_cookie('loggedIn', 'teacher', max_age=60*60*60*60*60)
@@ -168,10 +158,6 @@ def userLogin(request):
         studentClass = request.POST.get('student-class')
         studentSection = (request.POST.get('student-section')).upper()
 
-        if 'encryption' in request.COOKIES:
-            key = request.COOKIES.get('encryption')
-            fernet = Fernet(key.encode("UTF-8"))
-
         #validate class & section
         if studentClass not in validateList[0]:
             return render(request, 'login.html', {'error':'Login Failed! Ivalid Class'})
@@ -181,7 +167,7 @@ def userLogin(request):
 
         if(studentPassword == 'abc12345'):
             #request password change
-            return
+            return redirect(forgotPassword)
 
         #ref database/Login/student/class/section
         loginDdata = db.child('Login').child('Student').child(studentClass).child(studentSection).get(user['idToken'])
@@ -194,10 +180,7 @@ def userLogin(request):
         if len(dataList) > 0:
             for i in range(len(dataList)):
                 if str(dataList[i]['id']) == studentUsername:
-                    fernet = Fernet(dataList[i]['key'].encode("UTF-8"))
-                    decPassword = dataList[i]['password'].encode("UTF-8")
-                    decPassword = fernet.decrypt(decPassword).decode()
-                    if decPassword == studentPassword or studentPassword == dataList[i]['password']:
+                    if (verify_password(dataList[i]['password'], studentPassword)):
                         response = redirect(studentViews.studentDashboard)
                         #save student credentials to cookies
                         response.set_cookie('loggedIn', 'student', max_age=60*60*60*60*60)
@@ -245,7 +228,7 @@ def forgotPassword(request):
     if 'loggedIn' in request.COOKIES:
         return redirect(login)
 
-    return render(request, 'forgotPass.html', {'error':'Change your default passowrd!','display':'flex'})
+    return render(request, 'forgotPass.html', {'display':'none'})
 
 def sendVerification(request):
     user = auth.sign_in_with_email_and_password(student_mail, student_password)
@@ -254,6 +237,8 @@ def sendVerification(request):
         _class = request.POST.get('class')
         section = (request.POST.get('section')).upper()
 
+        if _class not in validateList[0] or section not in validateList[1]:
+            return render(request, 'forgotPass.html', {'error':'Invalid class or section!','display':'flex'})
         data = db.child('Login').child('Student').child(_class).child(section).child(id).get(user['idToken']).val()
 
         if data is not None:
@@ -268,6 +253,8 @@ def sendVerification(request):
             generateVerification(data['email'], 'student', id, _class, section)
 
             return response
+        else:
+            return render(request, 'forgotPass.html', {'error':'Invalid information!','display':'flex'})
     elif request.method == 'POST' and request.POST.get('user') == 'teacher':
         id = request.POST.get('userid')
 
@@ -297,6 +284,8 @@ def verifyCode(request):
         if loggedAs == 'teacher':
             if 'uid' in request.COOKIES:
                 uid = request.COOKIES.get('uid')
+            if 'mail' in request.COOKIES:
+                _mail = request.COOKIES.get('mail')
             verification_code = db.child('Login').child('Teacher').child(uid).get(user['idToken']).val()
         elif loggedAs == 'student':
             if 'uid' in request.COOKIES:
@@ -306,13 +295,13 @@ def verifyCode(request):
             if 'section' in request.COOKIES:
                 _section = request.COOKIES.get('section')
             if 'mail' in request.COOKIES:
-                _mail = request.COOKIES.get('section')
+                _mail = request.COOKIES.get('mail')
         
             verification_code = db.child('Login').child('Student').child(_class).child(_section).child(uid).get(user['idToken']).val()
         
         if(entered_verification_code == verification_code['verification']):
             #return change password page
-            return render(request, 'resetPassword.html', {'userid':uid, 'usermail':_mail})
+            return render(request, 'resetPassword.html', {'userid':uid, 'usermail':_mail, 'display':'none'})
         else:
             return JsonResponse({'error':''})
 
@@ -340,16 +329,15 @@ def resetPassword(request):
                     _class = request.COOKIES.get('class')
                 if 'section' in request.COOKIES:
                     _section = request.COOKIES.get('section')
+                if 'mail' in request.COOKIES:
+                        _mail = request.COOKIES.get('mail')
 
                 if _class in validateList[0] and _section in validateList[1]:
                     response = redirect(login)
 
-                    key = Fernet.generate_key()
-                    fernet = Fernet(key)
+                    encPassword = hash_password(password)
 
-                    encPassword = fernet.encrypt(password.encode())
-
-                    data = {'password':str(encPassword.decode("UTF-8")), 'key':str(key.decode("UTF-8"))}
+                    data = {'password':str(encPassword)}
                 
                     db.child('Login').child('Student').child(_class).child(_section).child(uid).update(data, user['idToken'])
                     
@@ -367,12 +355,9 @@ def resetPassword(request):
                 if password != repassword:
                     return response
 
-                key = Fernet.generate_key()
-                fernet = Fernet(key)
+                encPassword = hash_password(password)
 
-                encPassword = fernet.encrypt(password.encode())
-
-                data = {'password':str(encPassword.decode("UTF-8")), 'key':str(key.decode("UTF-8"))}
+                data = {'password':str(encPassword)}
 
                 db.child('Login').child('Teacher').child(uid).update(data, user['idToken'])
 
@@ -420,3 +405,22 @@ def checkEmail(email):
         return True
     except ValidationError:
         return False
+
+def hash_password(password):
+    """Hash a password for storing."""
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), 
+                                salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
+
+def verify_password(stored_password, provided_password):
+    """Verify a stored password against one provided by user"""
+    salt = stored_password[:64]
+    stored_password = stored_password[64:]
+    pwdhash = hashlib.pbkdf2_hmac('sha512', 
+                                  provided_password.encode('utf-8'), 
+                                  salt.encode('ascii'), 
+                                  100000)
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    return pwdhash == stored_password
