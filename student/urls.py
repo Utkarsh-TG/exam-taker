@@ -8,5 +8,6 @@ urlpatterns = [
     path('exam_block/', views.studentExamBlock),
     path('exam_warn/', views.studentExamWarn),
     path('exam_attendee/', views.studentExamAttendee),
+    path('exam_submit_mcq/', views.studentExamMCQSubmit),
     path('auth_detail/', views.authData)
 ]

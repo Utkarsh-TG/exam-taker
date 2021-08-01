@@ -102,13 +102,43 @@ def studentExamSubmit(request):
         #getting user data
         userData = db.child('Login').child('Student').child(_class).child(_section).child(_username).get(user['idToken']).val()
 
-        data = {'username':_username, 'answers':_answers, 'files':_file, 'time':_time, 'name':userData['username']}
+        data = {'username':_username, 'answers':_answers, 'files':_file, 'time':_time, 'name':userData['username'], 'type':'long'}
 
         db.child('Answers').child(_class).child(_title).child(_section).child(_username).update(data, user['idToken'])
 
         return HttpResponse('')
     
     return redirect(studentDashboard)
+
+def studentExamMCQSubmit(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
+    if 'loggedIn' not in request.COOKIES:
+        return redirect(mainViews.login)
+    if 'loggedIn' in request.COOKIES:
+        if request.COOKIES.get('loggedIn') != 'student':
+            return redirect(mainViews.login)
+    if 'uid' in request.COOKIES:
+        currentUser = request.COOKIES.get('uid')
+
+    if request.method == 'POST':
+        _user = currentUser or request.POST['user']
+        _class = request.POST['class']
+        _section = request.POST['section']
+        _time = request.POST['time']
+        _assignment = request.POST['title']
+        _answers = request.POST.get('answers', False)
+        print(_answers)
+        if _class not in validateList[0] or _section not in validateList[1]:
+            return HttpResponse('')
+        
+        #getting user data
+        userData = db.child('Login').child('Student').child(_class).child(_section).child(_user).get(user['idToken']).val()
+
+        data = {'username':_user, 'answers':json.loads(_answers), 'time':_time, 'name':userData['username'], 'type':'mcq'}
+
+        db.child('Answers').child(_class).child(_assignment).child(_section).child(_user).update(data, user['idToken'])
+        
+        return HttpResponse('')
 
 def studentExamWarn(request):
     user = auth.sign_in_with_email_and_password(student_mail, student_password)
