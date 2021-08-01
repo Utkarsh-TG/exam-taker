@@ -171,10 +171,16 @@
                             <div id="student-id" class="student-info"></div>
                             <div id="student-name" class="student-info"></div>
                         </div>
-                        <div id="student-answers"></div>
-                        <iframe src="" frameborder="0" id="student-file"></iframe>
+                        <div id="long-results">
+                            <div id="student-answers"></div>
+                            <iframe src="" frameborder="0" id="student-file"></iframe>
+                        </div>
+                        <div id="short-results">
+
+                        </div>
                         <div class="results-upload-container">
                             {% csrf_token %}
+                            <div id="marks-calc"></div>
                             <input type="text" id="marks-input" placeholder="Marks" required>
                             <textarea name="results-note" id="results-note-input" placeholder="Notes for student"></textarea>
                             <button type="submit" id="results-submit">Submit</button>
@@ -394,7 +400,7 @@
             classBtn.forEach(button => { 
                 if(button.textContent.slice(6) == lastClass){
                     button.classList.add('active-class-btn')
-                } 
+                }
             });
         }
 

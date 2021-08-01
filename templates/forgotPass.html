@@ -8,32 +8,163 @@
 </head>
 <body>
     <style>
-
+        @import url('https://fonts.googleapis.com/css2?family=PT+Sans&display=swap');
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: 0.2s ease;
+        }
+        body{
+            overflow: hidden;
+            background: rgb(136, 212, 139);
+            font-family: 'PT Sans', sans-serif;
+        }
+        input,input:active,input:focus{
+            outline: none;
+        }
+        .container{
+            width: 100vw;
+            height: 100vh;
+            background: rgb(136, 212, 139);
+        }
+        .password-reset-form-wrapper{
+            background: #f2f2f2;
+            position: absolute;
+            min-width: 500px;
+            width: 40%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-height: 450px;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: -2px 2px 2px 0.5px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+        .error-message{
+            display: none;
+            justify-content: space-between;
+            margin-top: 50px; 
+            position: fixed;
+            min-width: 30%;
+            font-family: 'PT Sans', sans-serif;
+            padding: 12px 25px;
+            text-align: center;
+            background: #ff6363;  /*green: #63ff73 , red:  #ff6363 , black: #303030*/
+            border-radius: 15px;
+            left: 50%;
+            transform: translate(-50%, 0%);
+            color: #f2f2f2;
+            font-weight: 600;
+            z-index: 999;
+        }
+        #close-error{
+            position: relative;
+            background: #ff6363;
+            padding: 0px 6.5px;
+            color: #f2f2f2;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'PT Sans', sans-serif;
+        }
+        #close-error:hover{
+            background: #bf3434;
+        }
+        #student-password-reset-form{
+            width: 100%;
+        }
+        #teacher-password-reset-form{
+            width: 100%;
+        }
+        .form-btn{
+            color: rgb(57, 168, 60);
+            display: inline-block;
+            min-width: 50%;
+            max-width: 50%;
+            text-align: end;
+            font-size: 2em;
+            padding: 5px 20px;
+            cursor: pointer;    
+            margin-bottom: 30px;
+        }
+        #student-form-btn{
+            border-right: 2px solid rgb(57, 168, 60);
+        }
+        #teacher-form-btn{
+            text-align: start;
+        }
+        .form-input{
+            font-size: 1.1em;
+            padding: 8px;
+            display: block;
+            width: 100%;
+            margin: 15px 0px;
+        }
+        #teacher-password-reset-form{
+            display: none;
+        }
+        .form-wrapper{
+            width: 100%;
+        }
+        .submit-btn{
+            padding: 8px;
+            font-size: 1.2em;
+            background: rgb(57, 168, 60);
+            border: 3px solid rgba(0, 0, 0, 0);
+            cursor: pointer;
+            width: 100%;
+            color: #f2f2f2;
+        }
+        .submit-btn:hover{
+            border: 3px solid rgb(57, 168, 60);
+            background: rgba(0, 0, 0, 0);
+            color: #000;
+        }
+        #page-head{
+            width: 100%;
+            margin: 20px;
+            text-align: center;
+            color: #000;
+        }
     </style>
-    <h1 id="page-head">Reset Password Form</h1>
-    {% include 'loading.html' %}
-    <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
-    <div class="password-reset-form-wrapper">
-        <div id="student-password-reset-form">
-            <form action="/password_verification/" method="POST">
-                <div class="form-heading"><h1>Student</h1></div>
-                {% csrf_token %}
-                <input type="text" name="user" value="student" hidden required>
-                <input type="text" name="userid" placeholder="ID" required>
-                <input type="text" name="class" placeholder="Class" required>
-                <input type="text" name="section" placeholder="Section" required>
-                <input type="submit" value="Submit">
-            </form>
-        </div>
-        <div id="teacher-password-reset-form">
-            <form action="/password_verification/" method="POST">
-                <div class="form-heading"><h1>Teacher</h1></div>
-                {% csrf_token %}
-                <input type="text" name="user" value="teacher" hidden required>
-                <input type="text" name="userid" placeholder="ID" required>
-                <input type="submit" value="Submit">
-            </form>
+    <div class="container">
+        <h1 id="page-head">Reset Password Form</h1>
+        {% include 'loading.html' %}
+        <div class="error-message" style="display:{{ display }};"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
+        <div class="password-reset-form-wrapper">
+            <div class="choose-form"><div id="student-form-btn" class="form-btn">Student</div><div id="teacher-form-btn" class="form-btn">Teacher</div></div>
+            <div class="form-wrapper">
+                <div id="student-password-reset-form">
+                    <form action="/password_verification/" method="POST">
+                        {% csrf_token %}
+                        <input type="text" name="user" value="student" hidden required readonly>
+                        <input type="text" class="form-input" name="userid" placeholder="ID" required>
+                        <input type="text" class="form-input" name="class" placeholder="Class" required>
+                        <input type="text" class="form-input" name="section" placeholder="Section" required>
+                        <input type="submit" value="Submit" class="submit-btn">
+                    </form>
+                </div>
+                <div id="teacher-password-reset-form">
+                    <form action="/password_verification/" method="POST">
+                        {% csrf_token %}
+                        <input type="text" name="user" value="teacher" hidden required readonly>
+                        <input type="text" class="form-input" name="userid" placeholder="ID" required>
+                        <input type="submit" value="Submit" class="submit-btn">
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+    <script>
+        $('#student-form-btn').on('click', () => {
+            $('#student-password-reset-form').css({'display':'block'})
+            $('#teacher-password-reset-form').css({'display':'none'})
+        })
+        $('#teacher-form-btn').on('click', () => {
+            $('#student-password-reset-form').css({'display':'none'})
+            $('#teacher-password-reset-form').css({'display':'block'})
+        })
+    </script>
 </body>
 </html>

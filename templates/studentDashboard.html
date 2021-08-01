@@ -66,11 +66,13 @@
                     </div>
                     <div class="question-paper-wrapper" id="question-paper-wrapper">
                         <textarea id="long-answer-based" readonly></textarea>
+                        <div id="short-answer-based"></div>
                     </div>
                     <div class="answer-form-wrapepr">
                         <div id="answer-form">
                             <textarea id="text-answers" placeholder="Answers.."></textarea>                            
                         </div>
+                        <div id="questionBlock"></div>
                     </div>
                 </div>
             </div>
@@ -100,7 +102,6 @@
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script> 
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-storage.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
     <script>
         $('#answer-file').on('change', () => {
             $('#input-file-name').html($('#answer-file').val().split(/(\\|\/)/g).pop())
@@ -271,6 +272,32 @@
             });
         }
 
+        const postMcqAnswers = () => {
+            _preventCheat = false
+            dateToday = new Date()
+            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+            $.ajax({
+                type: 'POST',
+                url: '/student/exam_submit_mcq/',
+                data:{
+                    user: username,
+                    class: userClass,
+                    section: userSection,
+                    title: assignmentTitle,
+                    time: _time,
+                    answers: JSON.stringify(mcqAnswers),
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },success: () => {
+                    //show loading
+                    loadWindow('mid', 3000)
+                    $('.assignments-container').css({'display':'block'})
+                    $('.assignment-window').css({'display':'none'})
+                    $('.final-submit-window').css({'display':'none'})
+                    $('.submit-warning').css({'display':'none'})
+                }
+            })
+        }
+
         const hideReturnedAssignments = () => {
             $('.assignments-container').css({'display':'block'})
             $('.returned-assignments-container').css({'display':'none'})
@@ -323,9 +350,145 @@
         })
 
         //on exam start
-        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked;
+        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked, examType, questionNum, questionData, disAllowPrev=true;
+
+        var mcqAnswers = {}
+
+        const checkAttemptedAnswers = () => {
+            if(mcqAnswers[questionNum+1] !== undefined){
+                optionSelected = mcqAnswers[questionNum+1]
+                if(optionSelected == 'A'){
+                    $('#optionA').click();
+                }else if(optionSelected == 'B'){
+                    $('#optionB').click();
+                }else if(optionSelected == 'C'){
+                    $('#optionC').click();
+                }else if(optionSelected == 'D'){
+                    $('#optionD').click();
+                }
+            }
+        }
+
+        const markAttempted = (ques) => {
+            let optionBtn = document.querySelectorAll('.question-view-btn')
+            optionBtn.forEach(button => { 
+                if(button.innerHTML == ques){
+                    $(button).css({'background':'rgb(0,150,0)'})
+                    $(button).css({'color':'#f2f2f2'})
+                }
+            });
+        }
+
+        const mcqOptionChange = (target) => {
+            val = target.value.toUpperCase()
+            mcqAnswers[target.name] = val
+            markAttempted(target.name)
+        }
+
+        const changeMcqQues = (func) => {
+            data = questionData
+            parent = document.getElementById('short-answer-based')
+            let displayMcqQuestion = () => {
+                let question = questionNum+1
+                wrapper = document.createElement('div')
+                wrapper.classList.add('mcq-question-wrap')
+                wrapper.innerHTML = "<span class='mcq-question' question-number='"+ question +"'>"+ question +": "+ data[questionNum]['question'] +"</span><div class='options-wrapper'> " +
+                "<div class='option-wrapper'><input type='radio' id='optionA' class='mcq-option' name='"+ question +"' value='A' onchange='mcqOptionChange(this)'><span class='mcq-option'>"+ data[questionNum]['options'][0] +"</span></div>"+
+                "<div class='option-wrapper'><input type='radio' id='optionB' class='mcq-option' name='"+ question +"' value='B' onchange='mcqOptionChange(this)'><span class='mcq-option'>"+ data[questionNum]['options'][1] +"</span></div>"+
+                "<div class='option-wrapper'><input type='radio' id='optionC' class='mcq-option' name='"+ question +"' value='C' onchange='mcqOptionChange(this)'><span class='mcq-option'>"+ data[questionNum]['options'][2] +"</span></div>"+
+                "<div class='option-wrapper'><input type='radio' id='optionD' class='mcq-option' name='"+ question +"' value='D' onchange='mcqOptionChange(this)'><span class='mcq-option'>"+ data[questionNum]['options'][3] +"</span></div></div>"+
+                "<div class='mcq-question-btn-wrapper'> <button id='prev-mcq-question-btn' onclick=\"changeMcqQues('prev')\">Previous</button><button id='next-mcq-question-btn' onclick=\"changeMcqQues('next')\">Next</button></div>"
+                parent.appendChild(wrapper)
+                checkAttemptedAnswers()
+            }
+            if(func == 'next'){
+                if(questionNum < data.length-1){
+                    questionNum += 1
+                    parent.innerHTML = ''
+                    displayMcqQuestion()
+                }
+            }else if(func == 'prev'){
+                if(questionNum > 0 && !disAllowPrev){
+                    questionNum -= 1
+                    parent.innerHTML = ''
+                    displayMcqQuestion()
+                }
+            }else if(func == 'first'){
+                questionNum = 0
+                parent.innerHTML = ''
+                displayMcqQuestion()
+            }else if(func == 'change'){
+                parent.innerHTML = ''
+                displayMcqQuestion()
+            }
+        }
+
+        const switchQues = (target) => {
+            data = questionData
+            if(0 < target.innerHTML <= data.length){
+                if(!disAllowPrev){
+                    questionNum = target.innerHTML - 1
+                    changeMcqQues('change')
+                }
+                if(disAllowPrev){
+                    if(target.innerHTML - 1 > questionNum){
+                        questionNum = target.innerHTML - 1
+                        changeMcqQues('change')
+                    }
+                }
+            }
+        }
+
+        const designQuestionBlock = (data) => {
+            parent = document.getElementById('questionBlock')
+            parent.innerHTML=''
+            for(let i = 1; i<=data.length;i++){
+                wrapper = document.createElement('div')
+                wrapper.classList.add('question-view-btn')
+                wrapper.setAttribute("onclick", "switchQues(this)")
+                wrapper.innerHTML = i
+                parent.appendChild(wrapper)
+            }
+        }
+
+        const displayMcqExamPaper = (data) => {
+            console.log(data)
+            questionData = data
+            mcqAnswers = {}
+            $('#long-answer-based').css({'display':'none'})
+            $('#short-answer-based').css({'display':'block'})
+            $('#answer-form').css({'display':'none'})
+            $('#questionBlock').css({'display':'block'})
+            changeMcqQues('first')
+            designQuestionBlock(data)
+            $(document).keydown(function (event) {
+                if (event.shiftKey && (event.keyCode === 78 || event.keyCode === 39)){
+                    //shift + n or ->
+                   changeMcqQues('next')
+                }else if(event.shiftKey && (event.keyCode === 80 || event.keyCode == 37)){
+                    //shift + p or <-
+                    changeMcqQues('prev')
+                }else if(event.keyCode === 65){
+                    //A
+                    $("#optionA").click();
+                }else if(event.keyCode === 66){
+                    //B
+                    $("#optionB").click();
+                }else if(event.keyCode === 67){
+                    //C
+                    $("#optionC").click();
+                }else if(event.keyCode === 68){
+                    //D
+                    $("#optionD").click();
+                }
+            })
+        }
 
         const displayLongExamPaper = (file) => {
+            $('#long-answer-based').css({'display':'block'})
+            $('#answer-form').css({'display':'block'})
+            $('#short-answer-based').css({'display':'none'})
+            $('#questionBlock').css({'display':'none'})
             parent = document.getElementById('long-answer-based')
             parent.value = file
         }
@@ -333,7 +496,19 @@
         const designExamForm = (data) => {
             $('.exam-info-bar').html(data['title'])
             if(data['type']=='long'){
+                examType = 'long'
                 displayLongExamPaper(data['file'])
+            }else if(data['type']=='mcq'){
+                examType = 'mcq'
+                disAllowPrev = data['questionCheat']
+                let refineData = (data) => {
+                    tempData = []
+                    for(i =0;i<data.length;i++){
+                        tempData[i] = {'question':data[i]['question'],'options':data[i]['options']}
+                    }
+                    return(tempData)
+                }
+                displayMcqExamPaper(refineData(data['file']))
             }
             displayChat()
         }
@@ -351,67 +526,71 @@
         }
         
         const forceEndExam = (from) => {
-            endExamScreen = true;
-            _preventCheat = false
-            let endTimeLeft = 300
-            const startEndExamTimer = setInterval(() => {
-                $('#final-clock-container').html(convertHMS(endTimeLeft))
-                endTimeLeft -= 1
-                if(endTimeLeft < 0){
-                    const forcePostAnswers = () => {
-                        dateToday = new Date()
-                        _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
-                        $.ajax({
-                            type: 'POST',
-                            url: '/student/exam_submit/',
-                            data:{
-                                user: username,
-                                class: userClass,
-                                section: userSection,
-                                title: assignmentTitle,
-                                time: _time,
-                                textanswer: $('#text-answers').val(),
-                                file: answerFileURL,
-                                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                            },success: () => {
-                                //show loading
-                                loadWindow('mid', 3000)
-                                $('.assignments-container').css({'display':'block'})
-                                $('.assignment-window').css({'display':'none'})
-                                $('.final-submit-window').css({'display':'none'})
-                                $('.submit-warning').css({'display':'none'})
-                            }
-                        })
-                    }
+            if(examType == 'long'){
+                endExamScreen = true;
+                _preventCheat = false
+                let endTimeLeft = 300
+                const startEndExamTimer = setInterval(() => {
+                    $('#final-clock-container').html(convertHMS(endTimeLeft))
+                    endTimeLeft -= 1
+                    if(endTimeLeft < 0){
+                        const forcePostAnswers = () => {
+                            dateToday = new Date()
+                            _time = dateToday.toISOString().replace(/[\-\.\:ZT]/g,"").substr(0,14)
+                            $.ajax({
+                                type: 'POST',
+                                url: '/student/exam_submit/',
+                                data:{
+                                    user: username,
+                                    class: userClass,
+                                    section: userSection,
+                                    title: assignmentTitle,
+                                    time: _time,
+                                    textanswer: $('#text-answers').val(),
+                                    file: answerFileURL,
+                                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                                },success: () => {
+                                    //show loading
+                                    loadWindow('mid', 3000)
+                                    $('.assignments-container').css({'display':'block'})
+                                    $('.assignment-window').css({'display':'none'})
+                                    $('.final-submit-window').css({'display':'none'})
+                                    $('.submit-warning').css({'display':'none'})
+                                }
+                            })
+                        }
 
-                    clearInterval(startEndExamTimer);
-                    storageRef = storage.ref('Results').child(userClass).child(assignmentTitle).child(userSection).child(username);
+                        clearInterval(startEndExamTimer);
+                        storageRef = storage.ref('Results').child(userClass).child(assignmentTitle).child(userSection).child(username);
 
-                    file = document.getElementById("answer-file").files[0];
-                    // uploading file this storage ref
-                    if(file){
-                        thisref = storageRef.child(file.name).put(file);
-                        thisref.on('state_changed',function(snapshot) {
-                            console.log('Done');
-                        }, function(error) {
-                            console.log('Error',error);
-                        }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                                answerFileURL = downloadURL
-                                forcePostAnswers()
+                        file = document.getElementById("answer-file").files[0];
+                        // uploading file this storage ref
+                        if(file){
+                            thisref = storageRef.child(file.name).put(file);
+                            thisref.on('state_changed',function(snapshot) {
+                                console.log('Done');
+                            }, function(error) {
+                                console.log('Error',error);
+                            }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                                    answerFileURL = downloadURL
+                                    forcePostAnswers()
+                                });
                             });
-                        });
-                    }else{
-                        forcePostAnswers()
+                        }else{
+                            forcePostAnswers()
+                        }
                     }
+                }, 1000)
+                //display warning
+                if(from == 'forced'){
+                    $('.error-message').css({'display':'flex'})
+                    $('#error-msg').html('Timeover, Upload and submit before auto submit!')
                 }
-            }, 1000)
-            //display warning
-            if(from == 'forced'){
-                $('.error-message').css({'display':'flex'})
-                $('#error-msg').html('Timeover, Upload and submit before auto submit!')
+                $('.final-submit-window').css({'display':'flex'})
+                $('.assignment-window').css({'display':'none'})
+            }else if(examType == 'mcq'){
+                postMcqAnswers()
             }
-            $('.final-submit-window').css({'display':'flex'})
-            $('.assignment-window').css({'display':'none'})
         }
 
         const startTimer = (data) => {
@@ -459,7 +638,7 @@
                 });
 
                 $(window).blur(function() {
-                    uploadStudentBlock()
+                    //uploadStudentBlock()
                 });
                 $('#lava-zone').mouseenter(() => {
                     document.getElementById('lava-zone').classList.add('warning-assignment')
@@ -590,6 +769,13 @@
                         if(attendees[i]['id'] == username){
                             $('.error-message').css({'display':'flex'})
                             $('#error-msg').html('You already gave exam!')
+
+
+                            loadWindow('mid', 3000)
+                            endExamScreen = false;
+                            firstAttempt()
+                            
+                            
                             break
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
@@ -752,8 +938,13 @@
         $('#open-final-submit').on('click', ()=>{
             _preventCheat = false
             loadWindow('mid', 3000)
-            $('.final-submit-window').css({'display':'flex'})
-            forceEndExam('non-forced')
+            if(examType == 'long'){
+                $('.final-submit-window').css({'display':'flex'})
+                forceEndExam('non-forced')
+            }
+            if(examType == 'mcq'){
+                postMcqAnswers()
+            }
         })
         $('#close-submit-btn').on('click', ()=>{
             $('.submit-warning').css({'display':'none'})
