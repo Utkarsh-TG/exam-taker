@@ -12,7 +12,11 @@ SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = os.getenv("DEBUG")
+if(os.getenv('DEBUG') == 'false'):
+    DEBUG = False
+else:
+    DEBUG = True
+    print(os.getenv('DEBUG'))
 
 ALLOWED_HOSTS = ['.herokuapp.com', '127.0.0.1', '.r.appspot.com']
 
