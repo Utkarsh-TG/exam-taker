@@ -165,6 +165,9 @@
             $('#student-password-reset-form').css({'display':'none'})
             $('#teacher-password-reset-form').css({'display':'block'})
         })
+        $('#close-error').on('click', ()=>{
+            $('.error-message').fadeOut(200)
+        })
     </script>
 </body>
 </html>

@@ -350,7 +350,7 @@
         })
 
         //on exam start
-        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked, examType, questionNum, questionData, disAllowPrev=true;
+        var timeLeft, stopTimer, timeOver, assignmentTitle, _preventCheat, blocked, examType, questionNum, questionData, disAllowPrev = false;
 
         var mcqAnswers = {}
 
@@ -510,6 +510,9 @@
                 }
                 displayMcqExamPaper(refineData(data['file']))
             }
+            document.getElementById('chat-log').innerHTML = ''
+            old_chat_data = null
+            chat_data = null
             displayChat()
         }
 
@@ -636,9 +639,8 @@
                     e.preventDefault();
                     e.returnValue = '';
                 });
-
                 $(window).blur(function() {
-                    //uploadStudentBlock()
+                    uploadStudentBlock()
                 });
                 $('#lava-zone').mouseenter(() => {
                     document.getElementById('lava-zone').classList.add('warning-assignment')
@@ -769,14 +771,7 @@
                         if(attendees[i]['id'] == username){
                             $('.error-message').css({'display':'flex'})
                             $('#error-msg').html('You already gave exam!')
-
-
-                            loadWindow('mid', 3000)
-                            endExamScreen = false;
-                            firstAttempt()
-                            
-                            
-                            break
+                            return false
                         }
                         else if(attendees[i]['id'] != username && i == attendees.length - 1){
                             loadWindow('mid', 3000)
@@ -811,7 +806,7 @@
         }
         
         //cheat prevention
-        if(!_preventCheat){
+        if(_preventCheat){
             window.oncontextmenu = function () {
                 return false;
             }
@@ -957,16 +952,18 @@
 
             file = document.getElementById("answer-file").files[0];
             // uploading file this storage ref
-            thisref = storageRef.child(file.name).put(file);
-            thisref.on('state_changed',function(snapshot) {
-                console.log('Done');
-            }, function(error) {
-                console.log('Error',error);
-            }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                    answerFileURL = downloadURL
-                    postAnswers()
+            if(file){
+                thisref = storageRef.child(file.name).put(file);
+                thisref.on('state_changed',function(snapshot) {
+                    console.log('Done');
+                }, function(error) {
+                    console.log('Error',error);
+                }, function() {thisref.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        answerFileURL = downloadURL
+                        postAnswers()
+                    });
                 });
-            });
+            }
 
             const postAnswers = () => {
                 dateToday = new Date()

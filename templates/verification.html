@@ -103,7 +103,7 @@
         }
     </style>
     {% include 'loading.html' %}
-    <div class="error-message"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
+    <div class="error-message" style="display:{{ display }};"><span id="error-msg">{{ error }}</span><span id="close-error">X</span></div>
     <form action="/verify_code/" method="post" id="verify-email-form">
         {% csrf_token %}
         <h1 id="form-head">Verification Code</h1>
@@ -113,5 +113,24 @@
         <input type="text" id="code-input" name="verificationcode" placeholder="Enter code" required autocomplete="off">
         <input type="submit" value="Submit" id="submit-btn">
     </form>
+    <div id="resend-verification-btn">Resend Verification Code</div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $('#resend-verification-btn').on('click', () => {
+            $.ajax({
+                type: 'POST',
+                url: '/password_reverification/',
+                data:{
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                }, success: () => {
+                    $('.error-message').attr('style','display: flex !important')
+                    $('#error-msg').html('Verification code has been sent to your mail!')
+                }
+            })
+        })
+        $('#close-error').on('click', ()=>{
+            $('.error-message').attr('style','display: none !important')
+        })
+    </script>
 </body>
 </html>
