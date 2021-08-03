@@ -16,6 +16,35 @@ input,input:active,input:focus{
     height: 100vh;
     background: rgb(136, 212, 139);
 }
+.error-message{
+    display: none;
+    justify-content: space-between;
+    margin-top: 50px; 
+    position: fixed;
+    min-width: 30%;
+    font-family: 'PT Sans', sans-serif;
+    padding: 12px 25px;
+    text-align: center;
+    background: #ff6363;  /*green: #63ff73 , red:  #ff6363 , black: #303030*/
+    border-radius: 15px;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    color: #f2f2f2;
+    font-weight: 600;
+    z-index: 999;
+}
+#close-error{
+    position: relative;
+    background: #ff6363;
+    padding: 0px 6.5px;
+    color: #f2f2f2;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'PT Sans', sans-serif;
+}
+#close-error:hover{
+    background: #bf3434;
+}
 .login-forms-wrapper{
     background: #f2f2f2;
     position: absolute;

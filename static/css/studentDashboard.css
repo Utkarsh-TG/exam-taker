@@ -236,6 +236,7 @@ ul#rules-list li{
     flex: 1;
     overflow-y: auto;
     border: 2px solid #000;
+    background: #f2f2f2;
 }
 #answer-form, #questionBlock{
     width: 100%;
@@ -729,6 +730,9 @@ input.mcq-option {
         min-width: 100%;
         max-width: 100%;
         display: block;
+    }
+    .submit-window-inner{
+        width: 90%;
     }
 }
 @media screen and (max-width: 350px) {

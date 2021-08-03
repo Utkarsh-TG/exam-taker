@@ -10,3 +10,6 @@ $("#student-login-form-btn").click(function(){
     $('#student-login-form-btn').addClass('form-option-selected')
     $('#teacher-login-form-btn').removeClass('form-option-selected')
 });
+$('#close-error').on('click', ()=>{
+    $('.error-message').attr('style','display: none !important')
+})
