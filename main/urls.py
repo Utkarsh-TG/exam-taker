@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/', views.login),
     path('forgot_password/', views.forgotPassword),
     path('password_verification/', views.sendVerification),
+    path('password_reverification/', views.resendVerificationCode),
     path('verify_code/', views.verifyCode),
     path('reset_password/', views.resetPassword),
     path('student_signup/', views.studentSignup),
@@ -14,5 +15,6 @@ urlpatterns = [
     path('chat_message/', views.examChatMessage),
     path('logout/', views.logout),
     path('home/', views.home),
-    path('', views.home),
+    path('', views.login),
+    
 ]

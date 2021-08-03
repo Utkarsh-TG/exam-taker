@@ -2,6 +2,7 @@ from logging import log
 import os
 import json
 import random
+import re
 from json import dumps
 from random import randint
 from django.http import response
@@ -47,6 +48,9 @@ user = auth.sign_in_with_email_and_password(student_mail, student_password)
 def ignition(request):
     return JsonResponse({'test':'run successful'}, status=200)
 
+def error_404_view(request, exception):
+    return render(request, '404.html')
+
 def home(request):
     #check if already logged in
     return render(request, 'index.html')
@@ -58,7 +62,7 @@ def signup(request):
         elif request.COOKIES.get('loggedIn') == 'student':
             return redirect(studentViews.studentDashboard)
     
-    return render(request, 'signup.html')
+    return render(request, 'signup.html', {'display':'none'})
 
 def studentSignup(request):
     user = auth.sign_in_with_email_and_password(student_mail, student_password)
@@ -70,6 +74,10 @@ def studentSignup(request):
         _class = "10"
 
         if _class in validateList[0] and _section in validateList[1]:
+
+            if(password == 'abc12345'):
+                return render(request, 'signup.html', {'display':'flex','error':'Change the default password!'})
+
             response = redirect(login)
 
             encPassword = hash_password(password)
@@ -77,8 +85,10 @@ def studentSignup(request):
             data = {'blocked':False, 'id':uid, 'username':username, 'class':_class, 'section':_section, 'password':str(encPassword)}
 
             db.child('Login').child('Student').child(_class).child(_section).child(uid).set(data, user['idToken'])
-            
+
             return response
+        else:
+            return render(request, 'signup.html', {'display':'flex','error':'Invalid Class or Section!'})
 
     return redirect(signup)    
 
@@ -91,11 +101,11 @@ def login(request):
             return redirect(studentViews.studentDashboard)
 
     #render login page
-    return render(request, 'login.html')
+    return render(request, 'login.html', {'display':'none'})
 
 def logout(request):
     if 'loggedIn' in request.COOKIES:
-        response = redirect(login)
+        response = render(request, 'login.html', {'display':'flex', 'error':'Logged out successfully!'})
 
         if request.COOKIES.get('loggedIn') == 'teacher':
             if 'uid' in request.COOKIES:
@@ -124,11 +134,8 @@ def userLogin(request):
         teacherPassword = request.POST.get('teacher-password')
 
         if(teacherPassword == "abc12345"):
-            #ask to change default
-            return redirect(forgotPassword)
-
-        if len(teacherUsername) < 3:
-            return render(request, 'login.html', {'error':'Login Failed! Ivalid Details', 'displayError':'flex'})
+            #request password change
+            return render(request, 'forgotPass.html', {'display':'flex', 'error':'Change your default password!'})
 
         #ref database/Login/Teacher
         loginDdata = db.child('Login').child('Teacher').get(user['idToken'])
@@ -149,8 +156,10 @@ def userLogin(request):
                     return response
                 else:
                     #return password error
-                    response = render(request, 'login.html', {'error':'Login Failed! Invalid Password', 'error-display':'flex'})
+                    response = render(request, 'login.html', {'error':'Login Failed! Invalid Password', 'display':'flex'})
                     return response
+        
+        return render(request, 'login.html', {'display':'flex', 'error':'Invalid information, User does not exists!'})
 
     elif request.method == 'POST' and request.POST.get('login-for') == 'student':
         studentUsername = request.POST.get('student-username')
@@ -160,14 +169,14 @@ def userLogin(request):
 
         #validate class & section
         if studentClass not in validateList[0]:
-            return render(request, 'login.html', {'error':'Login Failed! Ivalid Class'})
+            return render(request, 'login.html', {'error':'Login Failed! Ivalid Class', 'display':'flex'})
 
         if studentSection not in validateList[1]:
-            return render(request, 'login.html', {'error':'Login Failed! Ivalid Section'})
+            return render(request, 'login.html', {'error':'Login Failed! Ivalid Section', 'display':'flex'})
 
         if(studentPassword == 'abc12345'):
             #request password change
-            return redirect(forgotPassword)
+            return render(request, 'forgotPass.html', {'display':'flex', 'error':'Change your default password!'})
 
         #ref database/Login/student/class/section
         loginDdata = db.child('Login').child('Student').child(studentClass).child(studentSection).get(user['idToken'])
@@ -176,24 +185,23 @@ def userLogin(request):
         if loginDdata.val() is not None:
             for data in loginDdata.each():
                 dataList.append(data.val())
+         
+        for i in range(len(dataList)):
+            if str(dataList[i]['id']) == studentUsername:
+                if (verify_password(dataList[i]['password'], studentPassword)):
+                    response = redirect(studentViews.studentDashboard)
+                    #save student credentials to cookies
+                    response.set_cookie('loggedIn', 'student', max_age=60*60*60*60*60)
+                    response.set_cookie('uid', studentUsername, max_age=60*60*60*60*60)
+                    response.set_cookie('class', studentClass, max_age=60*60*60*60*60)
+                    response.set_cookie('section', studentSection, max_age=60*60*60*60*60)
+                    return response
+                else:
+                    #return invalid password
+                    return render(request, 'login.html', {'error':'Login Failed! Invalid Password', 'display':'flex'})
         
-        if len(dataList) > 0:
-            for i in range(len(dataList)):
-                if str(dataList[i]['id']) == studentUsername:
-                    if (verify_password(dataList[i]['password'], studentPassword)):
-                        response = redirect(studentViews.studentDashboard)
-                        #save student credentials to cookies
-                        response.set_cookie('loggedIn', 'student', max_age=60*60*60*60*60)
-                        response.set_cookie('uid', studentUsername, max_age=60*60*60*60*60)
-                        response.set_cookie('class', studentClass, max_age=60*60*60*60*60)
-                        response.set_cookie('section', studentSection, max_age=60*60*60*60*60)
-                        return response
-                    else:
-                        #return invalid password
-                        return render(request, 'login.html', {'error':'Login Failed! Invalid Password', 'error-display':'flex'})
-            else:
-                #invalid details (data not exist)
-                return render(request, 'login.html', {'error':'Login Failed! Invalid Details', 'error-display':'flex'})
+        #invalid details (data not exist)
+        return render(request, 'login.html', {'display':'flex', 'error':'Invalid information, User does not exists!'})
         
     return redirect(login)
 
@@ -239,10 +247,11 @@ def sendVerification(request):
 
         if _class not in validateList[0] or section not in validateList[1]:
             return render(request, 'forgotPass.html', {'error':'Invalid class or section!','display':'flex'})
+
         data = db.child('Login').child('Student').child(_class).child(section).child(id).get(user['idToken']).val()
 
         if data is not None:
-            response = render(request, 'verification.html')
+            response = render(request, 'verification.html', {'display':'none'})
 
             response.set_cookie('logged', 'student', max_age=60*5)
             response.set_cookie('uid', id, max_age=60*5)
@@ -261,17 +270,59 @@ def sendVerification(request):
         data = db.child('Login').child('Teacher').child(id).get(user['idToken']).val()
 
         if data is not None:
-            response = render(request, 'verification.html')
+            response = render(request, 'verification.html', {'display':'none'})
 
-            response.set_cookie('uid', id, max_age=60*5)
-            response.set_cookie('logged', 'teacher', max_age=60*5)
-            response.set_cookie('mail', data['email'], max_age=60*5)
+            response.set_cookie('uid', id)
+            response.set_cookie('logged', 'teacher')
+            response.set_cookie('mail', data['email'])
 
             generateVerification(data['email'], 'teacher', id, None, None)
 
             return response
+        else:
+            return render(request, 'forgotPass.html', {'error':'Invalid information!','display':'flex'})
 
     return redirect(login)
+
+def resendVerificationCode(request):
+    user = auth.sign_in_with_email_and_password(student_mail, student_password)
+    if request.method == 'POST' and request.COOKIES.get('logged') == 'student':
+        if 'logged' in request.COOKIES:
+            loggedAs = request.COOKIES.get('logged')
+
+        if loggedAs == 'student':
+            if 'uid' in request.COOKIES:
+                id = request.COOKIES.get('uid')
+            if 'class' in request.COOKIES:
+                _class = request.COOKIES.get('class')
+            if 'section' in request.COOKIES:
+                section = request.COOKIES.get('section')
+        
+        if _class not in validateList[0] or section not in validateList[1]:
+            return render(request, 'forgotPass.html', {'error':'Invalid class or section!','display':'flex'})
+        
+        data = db.child('Login').child('Student').child(_class).child(section).child(id).get(user['idToken']).val()
+
+        if data is not None:
+            generateVerification(data['email'], 'student', id, _class, section)
+            return HttpResponse('')
+        else:
+            return render(request, 'forgotPass.html', {'error':'Invalid information!','display':'flex'})
+
+
+    elif request.method == 'POST' and request.COOKIES.get('logged') == 'teacher':
+        if 'uid' in request.COOKIES:
+            id = request.COOKIES.get('uid')
+
+        data = db.child('Login').child('Teacher').child(id).get(user['idToken']).val()
+
+        if data is not None:
+            generateVerification(data['email'], 'teacher', id, None, None)
+            return HttpResponse('')
+        else:
+            return render(request, 'forgotPass.html', {'error':'Invalid information!','display':'flex'})
+
+    return redirect(forgotPassword)
 
 def verifyCode(request):
     user = auth.sign_in_with_email_and_password(student_mail, student_password)
@@ -301,9 +352,10 @@ def verifyCode(request):
         
         if(entered_verification_code == verification_code['verification']):
             #return change password page
-            return render(request, 'resetPassword.html', {'userid':uid, 'usermail':_mail, 'display':'none'})
+            mail = hideMail(_mail)
+            return render(request, 'resetPassword.html', {'userid':uid, 'usermail':mail, 'display':'none'})
         else:
-            return JsonResponse({'error':''})
+            return render(request, 'verification.html', {'error':'The code entered does not match!','display':'flex'})
 
     return redirect(login)
 
@@ -424,3 +476,13 @@ def verify_password(stored_password, provided_password):
                                   100000)
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
     return pwdhash == stored_password
+
+def hideMail(s):
+    e = s.find('@')
+    m = list(s)
+    i = 2
+    while i < (e-1):
+	    m[i] = '*'
+	    i+=1
+		
+    return(''.join(m))
